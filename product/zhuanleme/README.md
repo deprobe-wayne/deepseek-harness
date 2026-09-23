@@ -1,115 +1,118 @@
-# 赚了么 DSH 插件
+# Zhuanleme DSH plugin
 
-独立的产品 Bundle，复用官方 DSH 聊天和工作区服务，不修改官方 `apps/`、`packages/`。当前是本地 Profile 内的经营账本，不提供 SaaS 多租户权限、库存/BOM、支付或法定财务报表。
+English | [中文](README.zh.md)
 
-## 使用
+An independent product Bundle that reuses official DSH chat and workspace services without modifying official `apps/` or `packages/`. It currently provides a business ledger within a local Profile, not SaaS tenant permissions, inventory/BOM, payments, or statutory financial statements.
 
-在侧栏「我的店铺」添加店铺，或选择已有工作区作为店铺。同店不同对话共享持久账本。经营总览显示可横向滚动的收支与利润趋势，每屏 7 天且隐藏滚动条，按住鼠标左右拖动浏览；初次载入 30 天，左端自动加载更早日期；点击日期只切换当天数据，不重排趋势范围；账目明细采用收入／支出切换、细淡横竖网格线、右对齐金额。点击单元格无下划线直接编辑，Enter 或离开单元格自动保存，Esc 取消。新增在表内无框录入，日期与金额填写完整后按 Enter 或离开该行自动保存；每行常驻删除图标，点击直接删除；顶部支持撤销。搜索、排序、筛选、紧凑显示、全屏及 Excel / CSV 导出齐全，移动端表格内部横向滚动。明细不显示成本规则与待核对区域。
+## Usage
 
-### 表格组件与导出
+Add a shop under “My shops” in the sidebar, or select an existing workspace as a shop. Conversations in the same shop share a persistent ledger. The overview shows horizontally scrollable revenue, expense, and profit trends, seven days per screen, with hidden scrollbars and drag navigation. It initially loads 30 days and loads earlier dates at the left edge. Selecting a date changes that day's data without rearranging the trend range. The entries table switches between income and expenses, with light grid lines and right-aligned amounts. Click a cell to edit without an underline; Enter or leaving the cell saves, and Esc cancels. New entries use borderless table rows; after entering the date and amount, Enter or leaving the row saves. Each row always shows a delete icon for direct deletion; the toolbar provides undo. Search, sorting, filtering, compact display, fullscreen, and Excel / CSV export are available. On mobile, horizontal scrolling stays inside the table. The entries view does not show cost rules or a review section.
 
-使用 Material React Table 3.2.1 与 MUI 6.5.0（MIT）提供表格、原生编辑器和菜单，SheetJS 提供导出。表格 API 与大模型工具共享同一个 SQLite 账本。模型可查询和分析当前记录，并通过现有确认卡片新增、修改和删除；确认后表格自动刷新。
+### Table components and export
 
-撤销和修改历史来自服务端持久审计，刷新、切日期或重启后仍可恢复；更多菜单中的「修改历史与恢复」按每页 100 条加载更早记录。版本与内容检查阻止旧操作覆盖后续修改。失败编辑与未完成新增保存在当前浏览器，重新进入可继续；重试复用原提交标识。
+Material React Table 3.2.1 and MUI 6.5.0 (MIT) provide the table, native editors, and menus; SheetJS provides export. The table API and model tools share one SQLite ledger. The model can query and analyze records and propose additions, edits, or deletions through confirmation cards. The table refreshes after confirmation.
 
-“导出 Excel / CSV”下载当前店铺、日期、收支类型及搜索条件下的已保存记录，遵循当前排序，排除空白新增行和操作列。编辑中禁用导出，避免将未提交金额作为正式账目导出。备注按文本输出，金额保持数字。Excel 使用 [SheetJS CE 0.20.3](https://docs.sheetjs.com/docs/getting-started/installation/nodejs/)（Apache-2.0），从官方地址安装并锁定版本；下载在浏览器本地完成，无云转换服务。依赖许可位于各包 LICENSE 文件，构建保留许可声明。
+Undo and change history use persistent server audit records and remain available after refreshes, date changes, or restarts. “Change history and recovery” in the More menu loads earlier records in pages of 100. Version and content checks prevent an old operation from overwriting later edits. Failed edits and incomplete new entries stay in the current browser for resumption; retries reuse the original submission identifier.
 
-账表采用组件原生的单元格编辑和表内新增模式，工具栏简化为收支切换、撤销、新增、更多及搜索。
+“Export Excel / CSV” downloads saved records for the current shop, date, income/expense type, and search, in the current sort order, excluding empty new-entry rows and action columns. Export is disabled during editing so unsubmitted amounts are not exported as posted entries. Notes remain text and amounts remain numeric. Excel uses [SheetJS CE 0.20.3](https://docs.sheetjs.com/docs/getting-started/installation/nodejs/) (Apache-2.0), installed from its official URL with a pinned version. Downloads run locally in the browser without cloud conversion. Dependency licenses are in each package's LICENSE file, and builds retain their notices.
 
-AI 生成记账草稿或修改建议后，对话内显示确认卡片。核对店铺、日期、金额和修改前后内容，点击确认即直接入账或应用修改，账表同步刷新。卡片也可放弃建议；草稿放弃后标记为已撤销。无需打开经营总览完成确认，账表仍保留待核对项目。
+The table uses its components' native cell editing and in-table insertion modes. The toolbar contains income/expense selection, undo, add, More, and search.
 
-「智能经营」与「经营总览」「账目明细」是同级入口，默认收起，点击后直接展开各个聊天；最右侧加号在当前店铺新建对话。标题旁的更多菜单提供「已归档对话」「已删除对话」，在独立窗口中搜索和恢复历史。侧栏始终显示未归档对话。店铺与智能经营分别可折叠。
+When AI produces an entry draft or change proposal, the conversation shows a confirmation card. Review the shop, date, amount, and before/after values, then confirm to post the entry or apply the change and refresh the table. Cards also allow discarding proposals; discarded entry drafts are marked voided. Confirmation does not require opening the overview, and the ledger still retains items awaiting review.
 
-聊天以紧凑单行显示，悬停或键盘聚焦时显示归档与更多图标，触屏持续显示。更多菜单、右键或 Shift+F10 提供置顶、归档和删除；菜单浮在列表之上，点击外部或 Esc 关闭。置顶保存到本地，刷新后保持。对话支持归档、取消归档、移至已删除和恢复，成功后直接更新列表，不显示额外结果提示；较早对话可通过「显示更多对话」继续查看，对话较多时可按标题搜索完整列表。移至已删除需要再次确认，运行中的对话须先完成或停止。删除是可恢复的隐藏操作，不永久擦除聊天记录，也不删除店铺账目。
+“Business assistant” is a peer of “Overview” and “Entries”. It starts collapsed and expands directly into conversations; the rightmost plus creates a conversation in the current shop. The title's More menu opens archived or deleted conversations in separate searchable recovery windows. The sidebar always lists unarchived conversations. Shops and the assistant section collapse independently.
 
-六类成本分别为商品成本、人工、房租、水电燃气、平台费用、其他。规则支持日固定额、月固定额和营业额比例，必须明确计费基数与生效日期。没有的成本请明确填 0；未配置的成本不按零计算，利润显示待补全。新增默认逐笔流水，同日同渠道收入与同类实际费用分别累计；同类实际成本总额替换该项估算。旧数据保留日汇总语义，两种口径不能混记。已启用收入渠道须逐日核对，零收入需明确确认；未日结时报告与模型结果标记收入不完整。采购只进入采购明细，不直接扣利润。
+Conversations use compact single rows. Hover or keyboard focus reveals archive and More icons; touch screens show them continuously. More, right-click, or Shift+F10 opens pin, archive, and delete actions in an overlay menu, closed by outside clicks or Esc. Pins persist locally across refreshes. Archive, unarchive, move to deleted, and restore update the list directly without extra success notices. “Show more conversations” loads older entries, and title search covers the complete list when there are many conversations. Moving to deleted requires confirmation; running conversations must first finish or stop. Deletion is recoverable hiding: it does not permanently erase chat records or shop entries.
 
-## 安装与构建
+The six cost categories are goods, labor, rent, utilities, platform fees, and other. Rules support daily fixed amounts, monthly fixed amounts, and revenue percentages, with explicit calculation bases and effective dates. Enter 0 explicitly for absent costs. Unconfigured costs are not treated as zero, and profit remains incomplete. New entries default to individual transactions; same-day channel income and actual expenses in the same category accumulate independently. Actual category totals replace that category's estimate. Older data retains daily-summary semantics, and the two modes cannot be mixed. Enabled income channels require daily reconciliation, including explicit confirmation of zero revenue. Reports and model results flag incomplete revenue before day close. Purchases appear in purchase details without directly reducing profit.
 
-在官方源码根目录运行（外层项目也提供 `pnpm` 和 `dsh` 包装脚本）：
+## Installation and build
+
+Run from the official source root (the outer project also provides `pnpm` and `dsh` wrappers):
 
 ```sh
 node product/zhuanleme/build.mjs
 ../dsh plugin --profile web add "link:$PWD/product/zhuanleme"
 ```
 
-本地开发依赖使用 `pnpm --dir product/zhuanleme install --offline --ignore-workspace` 安装，Cordis 与工具运行器通过 peerDependencies 声明版本，开发依赖链接到当前 checkout，不能打包出第二份运行时。外层 `./dsh` 使用构建后的官方 CLI 和 Profile；更新 DSH 源码后先完成官方构建，不混用 tsx 源码别名与包的 lib 导出。
+Install local development dependencies with `pnpm --dir product/zhuanleme install --offline --ignore-workspace`. Cordis and the tool runner declare versions through peerDependencies, with development links to the current checkout; do not bundle a second runtime. The outer `./dsh` uses the built official CLI and Profile. Rebuild after updating DSH source; do not mix tsx source aliases with package lib exports.
 
-安装时优先使用绝对 `link:` 路径，避免 Profile 切换工作目录后的相对路径差异。重启 DSH 后加载 Host 改动；Client 构建产物由官方模块系统加载。浏览器标题使用官方完整构建变量 `DSH_CLIENT_TITLE=赚了么`，不是启动时配置。此插件构建器从当前 checkout 的 tsx 解析其 esbuild，输出 DSH `__ModuleLoader__.load` 懒加载 CJS factory；仅 React 与 JSX runtime 为平台外部依赖。该本地开发包不宣称支持任意 DSH 版本。
+Prefer absolute `link:` paths to avoid changes in relative resolution when a Profile switches directories. Restart DSH to load Host changes; the official module system loads Client artifacts. The browser title uses the full official build variable `DSH_CLIENT_TITLE=赚了么`, not a startup setting. The plugin builder resolves esbuild through the checkout's tsx and emits a lazy CJS factory using DSH `__ModuleLoader__.load`. Only React and the JSX runtime are platform externals. This local development package does not claim compatibility with arbitrary DSH versions.
 
-## DSH 扩展契约
+## DSH extension contract
 
-- `package.json` 声明 `dsh.bundle.patch`、`dsh.client.platform` 和 `./client`。
-- Host 声明依赖 `connection`、`webServer`、`workspaceRegistry`、`tools`、`profileContext` 和 `agents`。业务 API 注册到 `connection.fetch`，复用 DSH Host/Origin 和浏览器认证；运行状态来自官方 Agent 注册表。
-- UI 在 `slots.inject` 声明屏障内注册，使用 `priority: -100` 替换品牌叶子、工作区浏览区域和 `main.conversation`。不重复声明官方子 Slot，也不导入官方功能组件。
-- 主面板通过公开 `conversation.content` Factory 复用聊天、消息节点和输入框。页面状态经注册注入的 observable hook 传入，组件不接收 Context。
-- 三类业务确认卡片按工具名注册到官方 `tool.call.toolview`，Native 调用与 PTC 子调用共用卡片；回合末尾通过 `conversation.chat.turnTail` 保留本轮核对项，避免紧凑模式折叠工具过程后失去确认入口。官方 Runtime 负责调用树、结果配对与回放。
-- 客户端 CSS Modules 与自有 Locale 字典属于插件；样式、字典、数据请求、计时器、数据库与路由随生命周期清理。颜色跟随 DSH 主题。
-- 安装插件只增加 Profile 组合，不关闭已有市场、GenUI、设置或插件管理功能。
+- `package.json` declares `dsh.bundle.patch`, `dsh.client.platform`, and `./client`.
+- The Host depends on `connection`, `webServer`, `workspaceRegistry`, `tools`, `profileContext`, and `agents`. Business APIs register with `connection.fetch`, reusing DSH Host/Origin checks and browser authentication. Running state comes from the official Agent registry.
+- UI registration occurs inside the `slots.inject` declaration barrier, using `priority: -100` to replace brand leaves, workspace browsing, and `main.conversation`. It does not redeclare official child Slots or import official feature components.
+- The main panel reuses chat, message nodes, and the composer through the public `conversation.content` Factory. Registered observable hooks inject page state; components do not receive Context.
+- Three business confirmation cards register by tool name in `tool.call.toolview`, shared by Native and PTC child calls. `conversation.chat.turnTail` retains the turn's review items so compact tool rendering does not hide confirmation access. The official Runtime owns call trees, result pairing, and replay.
+- Client CSS Modules and Locale dictionaries belong to the plugin. Styles, dictionaries, requests, timers, databases, and routes clean up with their lifecycle. Colors follow the DSH theme.
+- Installation only adds Profile composition; it does not disable the existing marketplace, GenUI, settings, or plugin management.
 
-## AI 工具与 Model Experience
+## AI tools and Model Experience
 
-五个工具通过官方 `defineTool` 注册，统一校验模型参数并返回结构化 JSON，兼容 Native 与 PTC 调度。Host 展示函数保持纯函数；Web 为草稿、账目修改和成本规则提供对话确认卡片，查询与错误保留通用工具行。模型的金额输入单位为元，报表中的金额单位为整数分。
+Five tools register through official `defineTool`, validate model arguments, and return structured JSON compatible with Native and PTC scheduling. Host presentation functions remain pure. Web confirmation cards handle drafts, entry changes, and cost rules; queries and errors retain generic tool rows. Model amount inputs use yuan; report amounts use integer cents.
 
-- `zhuanleme_report(day?)` 返回账本、账目 id/version、rulesVersion、待核对修改建议、营业日期和时区。省略日期优先采用当前对话账表日期，否则为上海当天；当前搜索和收支类型在 viewContext 中返回，汇总仍是整日。明细最多 100 条，提供截断标记。
-- `zhuanleme_period(from,to,offset?,limit?,status?)` 查询 1 至 366 天的逐日汇总和分页账目，每页最多 500 条；status 可查正式账、草稿或删除记录，汇总始终只计正式账。
-- `zhuanleme_draft(...)` 创建收入、采购或实际成本草稿。重复请求返回当前真实状态，不重复入账。
-- `zhuanleme_change(...)` 为已有账目创建修改/撤销建议；必须先查 id/version，编辑时提供完整字段。
-- `zhuanleme_rules(...)` 为一个或多个明确指定项目创建成本规则建议；使用查询得到的 rulesVersion，未指定项目保持不变，不擅自补零。
+- `zhuanleme_report(day?)` returns the ledger, entry id/version, rulesVersion, pending change proposals, business date, and timezone. An omitted date first uses the current conversation's ledger date, otherwise today's Shanghai date. viewContext includes the current search and income/expense type, while totals still cover the whole day. Details are capped at 100 entries with a truncation flag.
+- `zhuanleme_period(from,to,offset?,limit?,status?)` queries daily totals and paginated entries for 1 to 366 days, up to 500 entries per page. status selects posted entries, drafts, or deleted records; totals always include posted entries only.
+- `zhuanleme_draft(...)` creates an income, purchase, or actual-cost draft. Repeated requests return the current real state without duplicate posting.
+- `zhuanleme_change(...)` proposes an edit or void for an existing entry. Query id/version first and provide complete fields for edits.
+- `zhuanleme_rules(...)` proposes cost rules for explicitly named items using the queried rulesVersion. Unspecified items remain unchanged, without assumed zero values.
 
-模型可传 `today/今天`、`yesterday/昨天` 或具体日期，不必用 Bash 查日期。店铺只由执行 Agent 的 Session cwd 解析，不能由模型选择另一个店铺；工具在异步解析店铺前后检查取消信号。缺少必要日期、金额或归属时应询问。AI 新增和修改等待用户点击确认，模型工具不提供确认入口，草稿和待核对建议不能称为已入账或已生效。
+The model can pass `today/今天`, `yesterday/昨天`, or an explicit date without querying the date through Bash. The shop resolves only from the executing Agent's Session cwd; the model cannot select another shop. Tools check cancellation before and after asynchronous shop resolution. Ask for missing required dates, amounts, or ownership. AI additions and changes wait for user confirmation; model tools provide no confirmation action. Drafts and pending proposals must not be described as posted or effective.
 
-成功的写入建议返回 `review: { shop, type, id }`，Native 结果同时保存展示元数据，PTC 子调用的持久结果内容保留同一标识。卡片核验它与所属对话店铺一致，再通过认证 API 的 `review` 操作读取当前记录；历史卡片显示当前已入账、已撤销、已应用或已放弃状态。确认提交用户已看到的账目版本，不静默替换成更新版本；冲突显示错误并重新读取状态。修改建议的确认在同一事务内检查原版本并更新账本、建议状态和审计，过期建议可放弃后重新生成。
+Successful write proposals return `review: { shop, type, id }`. Native results also retain presentation metadata, and persistent PTC child-call results preserve the same identifier. Cards verify that it matches their conversation's shop before reading current records through the authenticated API's `review` operation. Historical cards show the current posted, voided, applied, or discarded state. Confirmation submits the version the user saw rather than silently switching to a newer one; conflicts show an error and reload state. Change confirmation checks the original version and updates the ledger, proposal, and audit in one transaction. Discard stale proposals before generating replacements.
 
-## 数据与成本模型
+## Data and cost model
 
-数据库位于 `$DSH_HOME/profiles/<profile>/zhuanleme/ledger.sqlite`，采用 SQLite WAL、事务与 busy timeout。私有账本 `user_version=2` 保存账目、成本规则、审计、修改建议、稳定操作回执、渠道设置和日结；旧版 1 自动增量迁移，拒绝打开高于当前版本的数据库。金额全部是整数分；月成本余数分配给月初的若干天，使整月分摊严格等于配置金额。比例费率保存为基点。规则保留生效日期与顺序版本；账目修改/撤销写入 audit，旧记录不物理删除。
+The database is `$DSH_HOME/profiles/<profile>/zhuanleme/ledger.sqlite`, using SQLite WAL, transactions, and a busy timeout. The private ledger's `user_version=2` stores entries, cost rules, audit, change proposals, stable operation receipts, channel settings, and day closures. Version 1 migrates incrementally; newer unsupported versions are rejected. Amounts use integer cents. Monthly cost remainders are allocated to the first days of the month so allocations exactly equal the configured total. Percentage rates use basis points. Rules retain effective dates and ordered versions; entry edits and voids write audit records without physically deleting old entries.
 
-新增、编辑、撤销请求通过 operations 保存原响应，按店铺与提交标识去重，并与原始创建审计核对内容；原记录后来编辑或撤销，也不会使相同原始请求再次入账。账目确认或撤销可重试刚刚成功的同一 `id/version/action`，中间发生其他修改则拒绝旧版本。手动成本规则表单保存打开时的 `rulesVersion`，期间规则发生变化时整笔拒绝并要求重新打开表单。前端刷新与静默同步只在请求世代仍有效时发布结果，避免切店串账。
+Create, edit, and void requests preserve original responses in operations, deduplicate by shop and submission identifier, and compare contents with the original creation audit. Later edits or voids do not allow the same original request to post again. Confirmation or voiding can retry the same immediately successful `id/version/action`; intervening edits reject the old version. Manual cost-rule forms retain the rulesVersion at opening. If rules change meanwhile, the entire submission is rejected and the form must reopen. Refresh and silent synchronization publish only results from the current request generation, preventing data from crossing shop switches.
 
-归档状态由官方 WorkspaceRegistry 持久化。置顶与可恢复删除标记保存在同目录的 `conversations.sqlite`，与账本和 DSH Session 日志分开；删除先核验店铺归属与运行状态，再归档并记录标记，恢复时取消归档并清除标记。插件不提供永久删除，不修改 Session 持久化格式。卸载时停止接收对话操作，等待已接收的操作完成后关闭数据库。
+The official WorkspaceRegistry persists archive state. Pins and recoverable deletion markers live in the adjacent `conversations.sqlite`, separate from the ledger and DSH Session logs. Deletion verifies shop ownership and running state, archives the conversation, and records a marker; restoration unarchives it and removes the marker. The plugin offers no permanent deletion and does not change Session persistence formats. Unloading stops accepting conversation operations and waits for accepted operations before closing the database.
 
-学习相邻 `zhuanleme/agent-core/docs/ury-analysis.md` 和固定版本 `ury-reference` 中的成本分类与计算概念；独立实现，不复制或依赖 URY。第一版以日为实际成本覆盖范围，不支持跨期实际账单拆分、自动库存耗用或现金流核算。采购金额目前只代表采购记录，不断言已经付款。界面业务日期默认上海当天；模型工具支持明确的相对日期。
+Cost categories and calculation concepts draw on the adjacent `zhuanleme/agent-core/docs/ury-analysis.md` and pinned `ury-reference`; implementation is independent and neither copies nor depends on URY. The first version applies actual-cost overrides by day, without cross-period bill allocation, automatic inventory consumption, or cash-flow accounting. Purchase amounts represent purchase records without asserting payment. UI business dates default to today in Shanghai; model tools accept explicit relative dates.
 
-## 验证
+## Validation
 
-当前整改状态和验收结果见 [整改报告](REMEDIATION.md)；修复前问题与证据保留在 [原始验收清单](AUDIT-CURRENT.md)。历史 AUDIT.md 保留旧轮次结果，不能替代当前 UI 和真实模型验收。
+See the [remediation report](REMEDIATION.md) for current fixes and acceptance results; earlier issues and evidence remain in the [original acceptance checklist](AUDIT-CURRENT.md). Historical AUDIT.md results do not replace current UI and real-model acceptance.
 
 ```sh
 node --test product/zhuanleme/tests/*.test.mjs
 ```
 
-单元测试覆盖成本计算、店铺隔离、并发版本、创建和确认重试、认证 API 内的记录范围校验、对话删除与恢复持久化，以及 Cordis 卸载和重载。真实 DSH ToolRuntime 测试同时覆盖 Native 结果与 PTC 子调用的卡片标识；客户端模型测试覆盖过期响应、重复点击和确认版本。脚本模型与工具执行测试不等同于真实模型或浏览器端到端验收，实际结果见 [AUDIT.md](AUDIT.md)。
+Unit tests cover cost calculation, shop isolation, concurrent versions, create/confirmation retries, authenticated API record scoping, persistent conversation deletion/recovery, and Cordis unload/reload. Real DSH ToolRuntime tests cover card identifiers in Native results and PTC child calls. Client model tests cover stale responses, duplicate clicks, and confirmation versions. Scripted-model and tool tests are not real-model or browser end-to-end acceptance; see actual results in [AUDIT.md](AUDIT.md).
 
-无独立 invariant companion：账本以 SQLite 为权威源，汇总按需计算；对话标记与官方归档各自保存删除与归档状态，测试覆盖串行操作、失败恢复和生命周期。
+There is no separate invariant companion. SQLite owns ledger truth and totals are computed on demand. Conversation deletion markers and official archive state store separate deletion and archive facts; tests cover serial operations, failure recovery, and lifecycle.
 
-浏览器验收脚本为 `tests/browser-smoke.mjs`，仅针对隔离的 `zlm-test` Profile：设置 `ZLM_ACCEPTANCE_LOG` 为该服务的启动日志，`ZLM_ACCEPTANCE_PROFILE=zlm-test`，再用 Node 执行脚本。需要已安装 Google Chrome、中文界面与尚未配置凭据的隔离 Profile；会新建模拟店铺和账目并覆盖 `.impeccable/review/`，不要对真实数据运行。
+The browser acceptance script, `tests/browser-smoke.mjs`, targets only the isolated `zlm-test` Profile. Set `ZLM_ACCEPTANCE_LOG` to its startup log and `ZLM_ACCEPTANCE_PROFILE=zlm-test`, then execute with Node. It requires installed Google Chrome, a Chinese UI, and an isolated Profile without configured credentials. It creates simulated shops and entries and overwrites `.impeccable/review/`; do not run against real data.
 
-## 零售演示店
-点击「体验演示店」创建或打开独立的「演示店 · 青禾生活」。七天销售、采购与成本均为虚拟数据，持久保存在该店账本，不会填入已有真实店铺。重复进入不重复入账，也不会覆盖已修改或撤销的演示记录。首次体验日期记录在当前 Profile 的 `zhuanleme/demo-shop.json`；之后保留该时间段，可用日期选择器查看。API 和 AI 报告返回 `demo: true`。商品成本仍使用已有 `materials` 分类标识，不迁移账本数据。
+## Retail demo shop
 
-## Profile 代码回归
+“Try demo shop” creates or opens the isolated “Demo shop · Qinghe Living”. Its seven days of sales, purchases, and costs are fictional and persist only in that shop's ledger. Reopening neither duplicates entries nor overwrites edited or voided demo records. The initial date is stored in the current Profile's `zhuanleme/demo-shop.json`; the date range remains available through the date picker. API and AI reports return `demo: true`. Goods costs keep the existing `materials` category identifier without migrating ledger data.
 
-在外层目录运行 `.dsh-tools/node-v24.21.0-darwin-arm64/bin/node deepseek-harness/product/zhuanleme/tests/profile-smoke.mjs`。它从官方 Web 模板启动临时 Profile，经真实 Loader、AgentLoop、工具运行器和 SQLite 跑通查询、草稿与修改建议，验证持久化确认卡片标识以及人工确认前正式账目保持原值；脚本模型仅替代外部推理服务。测试会关闭子进程；完整会话和启动日志保留在打印的临时目录，日志含测试服务认证链接，不提交。
+## Profile code regression
 
-`ZLM_AUDIT_LIVE=1` 使用本项目已有模型配置做隔离实测，临时凭据与设置副本在运行结束后删除；服务商响应失败会使测试失败，不降级成模拟通过。`--browser` 或 `ZLM_AUDIT_BROWSER=1` 追加调用 `tests/review-smoke.mjs` 验证隔离页面；代码测试不替代页面验收。当前结果与限制见 [REMEDIATION.md](REMEDIATION.md)。
+From the outer directory, run `.dsh-tools/node-v24.21.0-darwin-arm64/bin/node deepseek-harness/product/zhuanleme/tests/profile-smoke.mjs`. It launches a temporary Profile from the official Web template, exercises queries, drafts, and changes through the real Loader, AgentLoop, tool runner, and SQLite, and verifies persistent card identifiers and unchanged posted records before manual confirmation. A scripted model replaces only external inference. The test closes its child process. Complete sessions and startup logs remain in the printed temporary directory; logs contain test authentication links and must not be committed.
 
-## 本地店铺项目
+`ZLM_AUDIT_LIVE=1` runs an isolated test with this project's existing model configuration, removing temporary credential and settings copies afterward. Provider failures fail the test instead of falling back to simulated success. `--browser` or `ZLM_AUDIT_BROWSER=1` additionally invokes `tests/review-smoke.mjs` to check the isolated page; code tests do not replace page acceptance. See [REMEDIATION.md](REMEDIATION.md) for current results and limitations.
 
-每家店对应官方 WorkspaceRegistry 的一个工作区项目。插件新建店铺时创建 `<profile.dir>/zhuanleme/shops/<UUID>/` 本地文件夹；已有工作区继续使用原路径。经营总览和账目明细是每店固定入口，多个对话共享该店数据。账本实际集中保存在 `<profile.dir>/zhuanleme/ledger.sqlite` 并按店铺隔离，不是每个店铺文件夹单独一个数据库；备份时需要包含 Profile 数据，不能只复制店铺文件夹。
+## Local shop projects
 
-## 日常经营与恢复
+Each shop maps to an official WorkspaceRegistry workspace project. New shops create a local `<profile.dir>/zhuanleme/shops/<UUID>/` folder; existing workspaces keep their paths. Overview and entries are fixed shop destinations, with multiple conversations sharing shop data. The ledger remains centralized in `<profile.dir>/zhuanleme/ledger.sqlite` and isolated by shop, rather than one database per shop folder. Backups must include Profile data, not just shop folders.
 
-表格将营业日期和发生时间合为「日期」列，直接输入 YYYY-MM-DD HH:mm（也接受秒），可只填日期；底层仍分别保存，沿用上海时区；不知道时留空，不拿系统创建时间代替。更多菜单可以显示业务字段：逐笔／日汇总、关联退款、收付状态与账户。退款金额填正数，由关联关系计为负向，不能超额或跨店退款；存在有效退款时不允许直接删除原记录。收付状态与账户仅记录用户提供的信息，不自动对账，不等同于现金流报表。
+## Daily operations and recovery
 
-更多菜单中的期间报表支持跨日汇总、明细分页和全部期间 Excel 导出；记录变更时中止导出，要求重新查询。未记录日期保留缺失，已确认零收入保持为零。「收入核对与日结」要求核对全部启用渠道，不允许遗漏当天已有收入的渠道。
+The table combines business date and occurrence time into a “Date” column accepting YYYY-MM-DD HH:mm, optional seconds, or a date alone. Storage retains separate fields in the Shanghai timezone. Unknown times remain blank rather than using system creation time. More can reveal transaction/daily-summary mode, linked refunds, payment status, and account. Refund amounts are positive inputs counted negatively through their links; excessive or cross-shop refunds are rejected. An original entry with an active refund cannot be directly deleted. Payment status and accounts record user-supplied information only, without automatic reconciliation or cash-flow statements.
 
-「账本备份与恢复」生成同一事务下的 JSON 快照，包含本店规则、审计、建议、操作回执、渠道和日结。恢复先校验和预览，仅允许恢复到新建空店铺；恢复会重新映射标识及历史序号，同步失败整笔回滚，不覆盖原店。校验和用于检测文件损坏，不是来源签名。聊天记录和聊天归档状态由 DSH 与独立对话数据库管理，不在账本备份中；完整环境备份仍需包含 Profile。
+Period reports in More provide multi-day totals, paginated details, and full-period Excel export. Changes during export abort it and require a fresh query. Unrecorded dates remain missing; confirmed zero revenue remains zero. “Revenue reconciliation and day close” requires all enabled channels and cannot omit a channel with recorded income that day.
 
-店铺名称右侧支持可恢复删除；已删除店铺从侧栏隐藏，后端保留恢复同一身份的能力（侧栏不展示回收入口），账本和对话不会清空。运行中的店铺拒绝删除，已删除店铺的账本 API 和经营工具拒绝读写。
+“Ledger backup and recovery” creates a JSON snapshot within one transaction, containing shop rules, audit, proposals, operation receipts, channels, and day closures. Restoration validates and previews the backup and only targets a new empty shop. It remaps identifiers and historical sequence numbers, rolling back the entire operation on synchronization failure without overwriting the original shop. The checksum detects corruption; it is not a source signature. DSH and the separate conversation database own chats and archive state, which are excluded from ledger backups. Full environment backups still require the Profile.
 
-输入框左侧麦克风复用已启用的 `dsh-voice` 的 `voice_health` / `voice_stt`，经原工具执行管线调用并沿用该插件配置；不另接识别服务。需要插件配置 ASR 接口和密钥，以及浏览器麦克风权限（HTTPS 或 localhost）。录音最长两分钟、最大 10MB；识别结果追加到草稿，不自动发送。临时录音在调用结束后删除。后端新增接口需要重启 DSH Profile。
+A recoverable delete action appears beside the shop name. Deleted shops disappear from the sidebar; the backend retains restoration with the same identity, although the sidebar has no recovery entry. Ledgers and conversations are retained. Running shops cannot be deleted, and deleted shops reject ledger API and business-tool reads and writes.
 
-明细首次打开时，若当日仅有已入账支出，则默认打开支出页；收入／支出页签各自显示当日已入账记录数，采购显示在支出中。页签计数不受表格搜索过滤影响。
+The composer has one microphone between model selection and send. Clicking it replaces the bottom toolbar with a dotted waveform, cancel, stop, and send. A browser AudioWorklet continuously captures audio and sends it through the authenticated API and `dsh-voice`'s `voice_stream` to local Zipformer. Recognition updates the draft continuously; SenseVoice corrects words, numbers, and punctuation at sentence endings. No API Key or cloud recognition is required, but initial use needs browser microphone permission on HTTPS or localhost. Recording is limited to two minutes. Cancel restores the original draft, stop retains final text, and send flushes audio before submission. Switching conversations or disconnecting the device stops recording. Manual edits take priority and are never overwritten. The outer project configures speech models and the Python service; backend changes require restarting the DSH Profile.
 
-侧栏不展示「已删除店铺」与「体验演示店」入口；移除入口不会清空已有账本、对话或删除标记。
+On first opening entries, if the day contains only posted expenses, the expense tab opens by default. Income and expense tabs display their respective posted record counts; purchases are expenses. Search filtering does not change tab counts.
+
+The sidebar does not expose “Deleted shops” or “Try demo shop”. Removing these entry points does not erase existing ledgers, conversations, or deletion markers.
