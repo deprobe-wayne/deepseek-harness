@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-22",
+  "scope": "Isolated DSH Profile, CUA browser; not user shop",
+  "manualCRUD": {
+    "add": 123.45,
+    "edit": 130.25,
+    "escapeCancelled": 999,
+    "undoEdit": 123.45,
+    "deleteAndUndo": true
+  },
+  "aiConfirmations": {
+    "actualCost": 300,
+    "purchaseBefore": 860,
+    "purchaseAfter": 820,
+    "monthlyRent": 3000,
+    "sqliteChecked": true
+  },
+  "exports": {
+    "xlsxReadBack": true,
+    "csvReadBack": true,
+    "amount": 123.45
+  },
+  "search": true,
+  "mobile": {
+    "width": 390,
+    "height": 844,
+    "documentWidth": 390,
+    "tableWidth": 726,
+    "physicalDevice": false
+  },
+  "limitations": [
+    "No offline/fault-injection browser run",
+    "No full dark/English flow",
+    "No real-model completed turn; gateway 500"
+  ]
+}

@@ -1,0 +1,3 @@
+- insert:
+    - id: zhuanleme
+      name: '@deepseek-ai/dsh-zhuanleme'

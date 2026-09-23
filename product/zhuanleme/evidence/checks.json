@@ -1,0 +1,15 @@
+{
+  "passed": [
+    "real Profile boot",
+    "create shop",
+    "manual revenue",
+    "cost rules",
+    "purchase not deducted from profit",
+    "reload persistence",
+    "edit and void",
+    "negative rejected",
+    "shop isolation",
+    "390px no overflow"
+  ],
+  "errors": []
+}

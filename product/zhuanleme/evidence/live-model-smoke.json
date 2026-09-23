@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "liveModel": true,
+  "provider": "fastid",
+  "model": "deepseek-v4.1-flash",
+  "reasoningEffort": "low",
+  "tools": 8,
+  "modelRequests": 6,
+  "recoveredToolErrors": 0,
+  "pendingChanges": 0,
+  "multiTurnRoundtrip": true,
+  "checkedAt": "2026-09-22T11:12:55.407Z",
+  "confirmedByBrowser": false,
+  "providerRetries": 4
+}

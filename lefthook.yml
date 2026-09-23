@@ -2,6 +2,15 @@
 # repository-wide gate matrix.
 # Install: `node scripts/install-lefthook.mjs` (runs automatically via postinstall).
 
+# Plain output remains readable in VS Code Git error dialogs.
+colors: false
+no_tty: true
+output:
+  - execution
+  - execution_out
+  - failure
+
+
 pre-commit:
   jobs:
     - name: translation pairing (staged records)

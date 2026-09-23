@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-09-22T09:54:33.451Z",
+  "scope": "Isolated current-behavior probes; reproduced=true confirms a gap, not product acceptance.",
+  "findings": [
+    {
+      "id": "income-is-daily-summary",
+      "reproduced": true,
+      "result": "Second same-day/channel income is rejected instead of accumulated."
+    },
+    {
+      "id": "ai-empty-note-blocks-table-edit",
+      "reproduced": true,
+      "result": "Confirmed AI entry with omitted note cannot have amount edited via table until note is supplied."
+    },
+    {
+      "id": "incomplete-income-appears-complete",
+      "reproduced": true,
+      "result": "Only store channel reported; summary.complete=true describes costs, with no revenue-completeness signal."
+    },
+    {
+      "id": "create-retry-undo-targets-other-edit",
+      "reproduced": true,
+      "result": "Retrying add after another edit returns undo token for that later edit; undo reverses the other edit."
+    },
+    {
+      "id": "lost-edit-response-retry-conflicts",
+      "reproduced": true,
+      "result": "Exact replay of successful edit is rejected; request identity is not consumed by edit."
+    },
+    {
+      "id": "refund-and-business-time",
+      "reproduced": true,
+      "result": "No negative-income/refund type or editable occurrence timestamp; only business day and system creation timestamp."
+    },
+    {
+      "id": "query-is-single-day",
+      "reproduced": true,
+      "result": "Report returns selected-day entries and seven-day summaries; older posted entries require another day query."
+    }
+  ]
+}

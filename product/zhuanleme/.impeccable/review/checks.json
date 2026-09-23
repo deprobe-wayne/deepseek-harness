@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "errors": [],
+  "checks": [
+    "home unsplit",
+    "retail demo data",
+    "sidebar overview",
+    "sidebar entries",
+    "conversation preserved",
+    "search",
+    "filter",
+    "dark capture",
+    "390px overflow",
+    "single AI chat"
+  ]
+}

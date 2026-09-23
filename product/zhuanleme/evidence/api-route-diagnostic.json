@@ -1,0 +1,79 @@
+{
+  "provider": "fastid",
+  "model": "deepseek-v4.1-flash",
+  "configuredBase": "https://www.fastaitoken.com",
+  "results": [
+    {
+      "target": "https://www.fastaitoken.com/chat/completions",
+      "stream": false,
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 2236542,
+      "html": true,
+      "htmlTitle": "FastAI 模型 - AI API Gateway",
+      "json": 0,
+      "unparsed": 1,
+      "done": false,
+      "finishes": [],
+      "types": [],
+      "contentChars": 0,
+      "elapsedMs": 1941
+    },
+    {
+      "target": "https://www.fastaitoken.com/chat/completions",
+      "stream": true,
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 2236542,
+      "html": true,
+      "htmlTitle": "FastAI 模型 - AI API Gateway",
+      "dataEvents": 0,
+      "json": 0,
+      "unparsed": 0,
+      "done": false,
+      "finishes": [],
+      "types": [],
+      "contentChars": 0,
+      "elapsedMs": 1935
+    },
+    {
+      "target": "https://www.fastaitoken.com/v1/chat/completions",
+      "stream": false,
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "bytes": 366,
+      "html": false,
+      "json": 1,
+      "unparsed": 0,
+      "done": false,
+      "finishes": [
+        "stop"
+      ],
+      "types": [
+        "chat.completion"
+      ],
+      "contentChars": 2,
+      "elapsedMs": 2206
+    },
+    {
+      "target": "https://www.fastaitoken.com/v1/chat/completions",
+      "stream": true,
+      "status": 200,
+      "contentType": "text/event-stream",
+      "bytes": 4186,
+      "html": false,
+      "dataEvents": 18,
+      "json": 17,
+      "unparsed": 0,
+      "done": true,
+      "finishes": [
+        "stop"
+      ],
+      "types": [
+        "chat.completion.chunk"
+      ],
+      "contentChars": 2,
+      "elapsedMs": 1757
+    }
+  ]
+}

@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-22T02:27:20.725032+00:00",
+  "title": "Design System: 赚了么经营工作台",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.1 255)",
+          "oklch(27% 0.1 255)",
+          "oklch(38% 0.1 255)",
+          "oklch(50% 0.1 255)",
+          "oklch(61% 0.1 255)",
+          "oklch(73% 0.1 255)",
+          "oklch(84% 0.1 255)",
+          "oklch(95% 0.1 255)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "primary-hover",
+        "tonalRamp": [
+          "oklch(15% 0.1 255)",
+          "oklch(27% 0.1 255)",
+          "oklch(38% 0.1 255)",
+          "oklch(50% 0.1 255)",
+          "oklch(61% 0.1 255)",
+          "oklch(73% 0.1 255)",
+          "oklch(84% 0.1 255)",
+          "oklch(95% 0.1 255)"
+        ]
+      },
+      "profit": {
+        "role": "secondary",
+        "displayName": "profit",
+        "tonalRamp": [
+          "oklch(15% 0.04 165)",
+          "oklch(27% 0.04 165)",
+          "oklch(38% 0.04 165)",
+          "oklch(50% 0.04 165)",
+          "oklch(61% 0.04 165)",
+          "oklch(73% 0.04 165)",
+          "oklch(84% 0.04 165)",
+          "oklch(95% 0.04 165)"
+        ],
+        "purpose": "利润数字、趋势折线与圆点；图例为短线。"
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "background",
+        "tonalRamp": [
+          "oklch(15% 0.01 255)",
+          "oklch(27% 0.01 255)",
+          "oklch(38% 0.01 255)",
+          "oklch(50% 0.01 255)",
+          "oklch(61% 0.01 255)",
+          "oklch(73% 0.01 255)",
+          "oklch(84% 0.01 255)",
+          "oklch(95% 0.01 255)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "foreground",
+        "tonalRamp": [
+          "oklch(15% 0.01 255)",
+          "oklch(27% 0.01 255)",
+          "oklch(38% 0.01 255)",
+          "oklch(50% 0.01 255)",
+          "oklch(61% 0.01 255)",
+          "oklch(73% 0.01 255)",
+          "oklch(84% 0.01 255)",
+          "oklch(95% 0.01 255)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "muted",
+        "tonalRamp": [
+          "oklch(15% 0.01 255)",
+          "oklch(27% 0.01 255)",
+          "oklch(38% 0.01 255)",
+          "oklch(50% 0.01 255)",
+          "oklch(61% 0.01 255)",
+          "oklch(73% 0.01 255)",
+          "oklch(84% 0.01 255)",
+          "oklch(95% 0.01 255)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "line",
+        "tonalRamp": [
+          "oklch(15% 0.01 255)",
+          "oklch(27% 0.01 255)",
+          "oklch(38% 0.01 255)",
+          "oklch(50% 0.01 255)",
+          "oklch(61% 0.01 255)",
+          "oklch(73% 0.01 255)",
+          "oklch(84% 0.01 255)",
+          "oklch(95% 0.01 255)"
+        ]
+      },
+      "soft": {
+        "role": "neutral",
+        "displayName": "soft",
+        "tonalRamp": [
+          "oklch(15% 0.01 255)",
+          "oklch(27% 0.01 255)",
+          "oklch(38% 0.01 255)",
+          "oklch(50% 0.01 255)",
+          "oklch(61% 0.01 255)",
+          "oklch(73% 0.01 255)",
+          "oklch(84% 0.01 255)",
+          "oklch(95% 0.01 255)"
+        ]
+      },
+      "on-primary": {
+        "role": "neutral",
+        "displayName": "on-primary",
+        "tonalRamp": [
+          "oklch(15% 0.01 255)",
+          "oklch(27% 0.01 255)",
+          "oklch(38% 0.01 255)",
+          "oklch(50% 0.01 255)",
+          "oklch(61% 0.01 255)",
+          "oklch(73% 0.01 255)",
+          "oklch(84% 0.01 255)",
+          "oklch(95% 0.01 255)"
+        ]
+      },
+      "cost-bar": {
+        "role": "neutral",
+        "displayName": "cost-bar",
+        "tonalRamp": [
+          "oklch(15% 0.01 255)",
+          "oklch(27% 0.01 255)",
+          "oklch(38% 0.01 255)",
+          "oklch(50% 0.01 255)",
+          "oklch(61% 0.01 255)",
+          "oklch(73% 0.01 255)",
+          "oklch(84% 0.01 255)",
+          "oklch(95% 0.01 255)"
+        ],
+        "purpose": "同一日期从零基线覆盖收入的成本柱；当前值 #8692a2，与成本图例一致。"
+      },
+      "error": {
+        "role": "neutral",
+        "displayName": "error",
+        "tonalRamp": [
+          "oklch(15% 0.09 28)",
+          "oklch(27% 0.09 28)",
+          "oklch(38% 0.09 28)",
+          "oklch(50% 0.09 28)",
+          "oklch(61% 0.09 28)",
+          "oklch(73% 0.09 28)",
+          "oklch(84% 0.09 28)",
+          "oklch(95% 0.09 28)"
+        ]
+      },
+      "error-background": {
+        "role": "neutral",
+        "displayName": "error-background",
+        "tonalRamp": [
+          "oklch(15% 0.09 28)",
+          "oklch(27% 0.09 28)",
+          "oklch(38% 0.09 28)",
+          "oklch(50% 0.09 28)",
+          "oklch(61% 0.09 28)",
+          "oklch(73% 0.09 28)",
+          "oklch(84% 0.09 28)",
+          "oklch(95% 0.09 28)"
+        ]
+      },
+      "cost-legend": {
+        "role": "secondary",
+        "displayName": "cost-legend",
+        "tonalRamp": [
+          "oklch(15% 0.03 255)",
+          "oklch(27% 0.03 255)",
+          "oklch(38% 0.03 255)",
+          "oklch(50% 0.03 255)",
+          "oklch(61% 0.03 255)",
+          "oklch(73% 0.03 255)",
+          "oklch(84% 0.03 255)",
+          "oklch(95% 0.03 255)"
+        ]
+      },
+      "series-0": {
+        "role": "secondary",
+        "displayName": "series-0",
+        "tonalRamp": [
+          "oklch(15% 0.1 255)",
+          "oklch(27% 0.1 255)",
+          "oklch(38% 0.1 255)",
+          "oklch(50% 0.1 255)",
+          "oklch(61% 0.1 255)",
+          "oklch(73% 0.1 255)",
+          "oklch(84% 0.1 255)",
+          "oklch(95% 0.1 255)"
+        ]
+      },
+      "series-1": {
+        "role": "secondary",
+        "displayName": "series-1",
+        "tonalRamp": [
+          "oklch(15% 0.05 255)",
+          "oklch(27% 0.05 255)",
+          "oklch(38% 0.05 255)",
+          "oklch(50% 0.05 255)",
+          "oklch(61% 0.05 255)",
+          "oklch(73% 0.05 255)",
+          "oklch(84% 0.05 255)",
+          "oklch(95% 0.05 255)"
+        ]
+      },
+      "series-2": {
+        "role": "secondary",
+        "displayName": "series-2",
+        "tonalRamp": [
+          "oklch(15% 0.025 255)",
+          "oklch(27% 0.025 255)",
+          "oklch(38% 0.025 255)",
+          "oklch(50% 0.025 255)",
+          "oklch(61% 0.025 255)",
+          "oklch(73% 0.025 255)",
+          "oklch(84% 0.025 255)",
+          "oklch(95% 0.025 255)"
+        ]
+      },
+      "series-3": {
+        "role": "secondary",
+        "displayName": "series-3",
+        "tonalRamp": [
+          "oklch(15% 0.04 165)",
+          "oklch(27% 0.04 165)",
+          "oklch(38% 0.04 165)",
+          "oklch(50% 0.04 165)",
+          "oklch(61% 0.04 165)",
+          "oklch(73% 0.04 165)",
+          "oklch(84% 0.04 165)",
+          "oklch(95% 0.04 165)"
+        ]
+      },
+      "series-4": {
+        "role": "secondary",
+        "displayName": "series-4",
+        "tonalRamp": [
+          "oklch(15% 0.04 85)",
+          "oklch(27% 0.04 85)",
+          "oklch(38% 0.04 85)",
+          "oklch(50% 0.04 85)",
+          "oklch(61% 0.04 85)",
+          "oklch(73% 0.04 85)",
+          "oklch(84% 0.04 85)",
+          "oklch(95% 0.04 85)"
+        ]
+      },
+      "series-5": {
+        "role": "secondary",
+        "displayName": "series-5",
+        "tonalRamp": [
+          "oklch(15% 0.01 285)",
+          "oklch(27% 0.01 285)",
+          "oklch(38% 0.01 285)",
+          "oklch(50% 0.01 285)",
+          "oklch(61% 0.01 285)",
+          "oklch(73% 0.01 285)",
+          "oklch(84% 0.01 285)",
+          "oklch(95% 0.01 285)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "headline",
+        "purpose": "Plugin ledger scope; official conversation retains DSH typography."
+      },
+      "title": {
+        "displayName": "title",
+        "purpose": "Plugin ledger scope; official conversation retains DSH typography."
+      },
+      "section": {
+        "displayName": "section",
+        "purpose": "Plugin ledger scope; official conversation retains DSH typography."
+      },
+      "body": {
+        "displayName": "body",
+        "purpose": "Plugin ledger scope; official conversation retains DSH typography."
+      },
+      "label": {
+        "displayName": "label",
+        "purpose": "Plugin ledger scope; official conversation retains DSH typography."
+      },
+      "small": {
+        "displayName": "small",
+        "purpose": "Plugin ledger scope; official conversation retains DSH typography."
+      },
+      "metric": {
+        "displayName": "metric",
+        "purpose": "Plugin ledger scope; official conversation retains DSH typography."
+      },
+      "welcome": {
+        "displayName": "欢迎页标题",
+        "purpose": "Store home only; 32px desktop, 25px mobile."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "ledger-enter",
+        "value": "enter .24s ease-out",
+        "purpose": "Only prefers-reduced-motion:no-preference; opacity .7→1 and translateY(3px)→0."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-layout",
+        "value": "1200px"
+      },
+      {
+        "name": "toolbar-wrap",
+        "value": "1100px"
+      },
+      {
+        "name": "mobile-switch",
+        "value": "850px"
+      }
+    ],
+    "themeOverrides": {
+      "selector": "body[data-ds-dark-theme]",
+      "scope": "plugin root only, except explicit shop input rule",
+      "colors": {
+        "background": "#191b1f",
+        "foreground": "#e9eaf0",
+        "muted": "#a3aab6",
+        "line": "#31353d",
+        "soft": "#24272d",
+        "primary": "#82a6dc",
+        "profit": "#87b2a4",
+        "on-primary": "#121a27",
+        "error-background": "#382523",
+        "error": "#f2aaa2",
+        "series-0": "#82a6dc",
+        "series-1": "#91a1b7",
+        "series-2": "#65758a",
+        "series-3": "#87b2a4",
+        "series-4": "#b4a487",
+        "series-5": "#9e97aa"
+      },
+      "shopChildActive": {
+        "background": "#2b3039",
+        "color": "#e9eaf0"
+      },
+      "dateInput": {
+        "color-scheme": "dark"
+      }
+    },
+    "provenance": {
+      "source": "src/client/zhuanleme.module.css; src/client/index.jsx",
+      "evidence": [
+        ".impeccable/review/home.png",
+        ".impeccable/review/desktop.png",
+        ".impeccable/review/entries.png",
+        ".impeccable/review/dark.png",
+        ".impeccable/review/mobile.png",
+        ".impeccable/review/mobile-entries.png",
+        ".impeccable/review/mobile-chat.png"
+      ],
+      "logo": "User-provided assets/logo.png; unchanged artwork.",
+      "snippets": "Static illustrative demo data; light-theme CSS resolved because z tokens are plugin-scoped. Host conversation remains native DSH. No invented card primitive.",
+      "tonalRamps": "Synthesized preview ramps only; not implemented theme scales."
+    },
+    "trend": {
+      "description": "七天收入与成本共用每日横坐标、柱宽和零基线，成本覆盖收入，不相加或并排；利润独立绘制折线与圆点。",
+      "barWidth": "24px",
+      "barRadius": "3px",
+      "unselectedBarOpacity": 0.8,
+      "selectedBarOpacity": 1,
+      "revenueCap": "成本高于收入时，以品牌蓝绘制 3px 宽描边的收入顶部横线。",
+      "profitLineWidth": "2px",
+      "profitPointRadius": "3px; selected 4px",
+      "profitPointStroke": "background, 1.5px",
+      "profitLegend": "12px × 2px line",
+      "missingAndZero": "缺失收入或成本不绘制对应柱；零值柱高为零。利润仅连接相邻且均非缺失的点，缺失处断线；零利润圆点落在零线上，负利润在零线下方。",
+      "interaction": "日期支持鼠标与键盘选择；利润折线与圆点不拦截日期命中区。"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "主要录入与保存动作。",
+      "html": "<button class=\"ds-primary\">手动录入</button>",
+      "css": ".ds-primary{font-family:-apple-system, BlinkMacSystemFont, \"PingFang SC\", sans-serif;font-size:13px;line-height:1.6;border:0;border-radius:7px;padding:7px 10px;color:#fff;background:#3769ad;cursor:pointer}.ds-primary:hover{background:#2c578e}.ds-primary:focus-visible{outline:2px solid #3769ad;outline-offset:2px;}.ds-primary:disabled{opacity:.5;cursor:wait}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "成本规则与次要动作。",
+      "html": "<button class=\"ds-ghost\">成本规则</button>",
+      "css": ".ds-ghost{font-family:-apple-system, BlinkMacSystemFont, \"PingFang SC\", sans-serif;font-size:13px;line-height:1.6;border:0;border-radius:7px;padding:7px 10px;color:#202124;background:transparent;cursor:pointer}.ds-ghost:hover{background:#f5f6f8}.ds-ghost:focus-visible{outline:2px solid #3769ad;outline-offset:2px;}"
+    },
+    {
+      "name": "Amount Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "上方标签与清晰焦点。",
+      "html": "<label class=\"ds-label\">金额（元）<input class=\"ds-input\" inputmode=\"decimal\" placeholder=\"0.00\"></label>",
+      "css": ".ds-label{font-family:-apple-system, BlinkMacSystemFont, \"PingFang SC\", sans-serif;font-size:13px;line-height:1.6;display:flex;flex-direction:column;gap:5px;font-size:12px;color:#202124}.ds-input{font-family:-apple-system, BlinkMacSystemFont, \"PingFang SC\", sans-serif;font-size:13px;line-height:1.6;color:#202124;background:#fff;border:1px solid #e8e9ed;border-radius:7px;padding:8px 9px;caret-color:#3769ad}.ds-input::placeholder{color:#69717d}.ds-input:focus-visible{outline:2px solid #3769ad;outline-offset:2px;}"
+    },
+    {
+      "name": "Error Message",
+      "kind": "custom",
+      "refersTo": "error-message",
+      "description": "局部操作失败提示。",
+      "html": "<p class=\"ds-error\" role=\"alert\">保存失败，请重试。</p>",
+      "css": ".ds-error{font-family:-apple-system, BlinkMacSystemFont, \"PingFang SC\", sans-serif;font-size:13px;line-height:1.6;font-size:12px;color:#b23b35;background:#fff2ef;padding:12px;border-radius:8px}"
+    },
+    {
+      "name": "Ledger Metrics",
+      "kind": "custom",
+      "description": "三列直接展示指标，无卡片容器。",
+      "html": "<div class=\"ds-metrics\"><div><span>营业收入</span><strong>8,200.00</strong></div><div><span>经营成本</span><strong>3,560.00</strong></div><div><span>预计利润</span><strong data-profit=\"true\">4,640.00</strong></div></div>",
+      "css": ".ds-metrics{font-family:-apple-system, BlinkMacSystemFont, \"PingFang SC\", sans-serif;font-size:13px;line-height:1.6;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0 30px;padding-bottom:24px;border-bottom:1px solid #e8e9ed;color:#202124}.ds-metrics span{display:block;color:#69717d;font-size:12px;margin-bottom:7px}.ds-metrics strong{display:block;font-size:26px;font-weight:550;letter-spacing:-.035em;font-variant-numeric:tabular-nums}.ds-metrics strong[data-profit=true]{color:#426d63}"
+    },
+    {
+      "name": "Store Child Navigation",
+      "kind": "nav",
+      "refersTo": "shop-child-active",
+      "description": "店铺下的总览与明细，按需展开数据面板。",
+      "html": "<nav class=\"ds-shopnav\" aria-label=\"青禾生活\"><button aria-current=\"page\">经营总览</button><button>账目明细</button></nav>",
+      "css": ".ds-shopnav{font-family:-apple-system,BlinkMacSystemFont,\"PingFang SC\",sans-serif;margin:4px 0 8px 16px;padding-left:9px;border-left:1px solid #e8e9ed}.ds-shopnav button{display:flex;width:100%;font:inherit;font-size:12px;margin:2px 0;padding:8px 9px;border:0;border-radius:7px;background:transparent;color:#69717d;cursor:pointer}.ds-shopnav button:hover{background:#f5f6f8}.ds-shopnav button[aria-current=page]{background:#f5f6f8;color:#202124;font-weight:600}.ds-shopnav button:focus-visible{outline:2px solid #3769ad;outline-offset:2px}"
+    },
+    {
+      "name": "Demo Label",
+      "kind": "chip",
+      "refersTo": "demo-label",
+      "description": "零售演示数据标记，和隔离说明同时展示。",
+      "html": "<p class=\"ds-demo\"><span>演示数据</span>此店为虚拟零售店，数据仅供体验，与其他店铺账本独立。</p>",
+      "css": ".ds-demo{font-family:-apple-system,BlinkMacSystemFont,\"PingFang SC\",sans-serif;display:flex;align-items:baseline;gap:8px;font-size:11px;color:#69717d;padding:10px 0 4px}.ds-demo span{font-size:10px;white-space:nowrap;padding:2px 6px;background:#f5f6f8;border-radius:4px;color:#202124}"
+    },
+    {
+      "name": "Searchable Ledger Table",
+      "kind": "custom",
+      "description": "当日明细表的搜索、类型筛选和带文字的入账状态。静态预览不连接账本。",
+      "html": "<div class=\"ds-ledger\"><div class=\"ds-tools\"><input aria-label=\"搜索账目\" placeholder=\"搜索类型、类别或备注\"><select aria-label=\"账目类型\"><option>全部账目</option><option>营业收入</option><option>采购</option><option>实际成本</option></select></div><div class=\"ds-scroll\"><table><thead><tr><th>项目</th><th>来源</th><th>金额</th><th>状态</th></tr></thead><tbody><tr><td>营业收入 · 门店<small>演示零售数据</small></td><td>手动录入</td><td class=\"ds-amount\">8,920.00</td><td><span class=\"ds-status\">已入账</span></td></tr></tbody></table></div></div>",
+      "css": ".ds-ledger{font-family:-apple-system,BlinkMacSystemFont,\"PingFang SC\",sans-serif;color:#202124;font-size:12px;line-height:1.6}.ds-tools{display:flex;gap:10px;margin:24px 0 10px}.ds-tools input,.ds-tools select{font:inherit;font-size:13px;color:inherit;background:#fff;border:1px solid #e8e9ed;border-radius:7px;padding:8px 9px;min-width:0}.ds-tools input{flex:1}.ds-tools select{max-width:140px}.ds-tools input:focus-visible,.ds-tools select:focus-visible{outline:2px solid #3769ad;outline-offset:2px}.ds-scroll{overflow:auto}.ds-ledger table{width:100%;min-width:440px;border-collapse:collapse;font-variant-numeric:tabular-nums}.ds-ledger th{text-align:left;background:#f5f6f8;color:#69717d;font-size:11px;font-weight:500;padding:12px 10px;border-bottom:1px solid #e8e9ed}.ds-ledger td{padding:17px 10px;border-bottom:1px solid #e8e9ed}.ds-ledger tr:hover{background:#f5f6f8}.ds-ledger small{display:block;color:#69717d;font-size:11px;margin-top:4px}.ds-ledger .ds-amount{text-align:right;font-weight:600}.ds-ledger th:nth-child(3){text-align:right}.ds-status{font-size:10px;color:#426d63;white-space:nowrap}"
+    }
+  ],
+  "narrative": {
+    "northStar": "摊开的经营账本",
+    "overview": "像一本摊开的经营账本：数字清楚、留白充足、操作简短。进入店铺先展示单区欢迎与行动入口；选择经营总览或账目明细后，才展开数据与 AI 双栏。账表以细线组织信息，原生 DSH 对话保留自己的组件、主题与排版。\n\nLogo 来源为用户提供的赚了么品牌图片，存于 `assets/logo.png`，通过 `/zhuanleme/logo.png` 展示；完整保留图片，不重新绘制或更改内容。常规品牌图为 28px 方形，欢迎页为 48px 方形，均使用 contain 适配。",
+    "keyCharacteristics": [
+      "细分隔线与平面信息层次。",
+      "对齐的小数、克制的蓝色操作与绿色利润。",
+      "单区欢迎，按需展开数据与对话，窄屏切换面板。",
+      "演示零售店持续标注虚拟数据，与真实店铺账本隔离。"
+    ],
+    "rules": [
+      {
+        "name": "The Host Continuity Rule",
+        "body": "插件中性色优先使用 DSH 主题别名；聊天、输入器与模型选择保持官方组件的排版与交互。",
+        "section": "colors"
+      },
+      {
+        "name": "The Quiet Structure Rule",
+        "body": "通过留白、文字层级与细分隔线组织内容；不把指标包装成独立浮起的卡片。",
+        "section": "elevation"
+      },
+      {
+        "name": "The Honest Numbers Rule",
+        "body": "缺失数据保留缺失状态，零值保持为零；图表表达所选店铺账目，虚拟演示数据必须明确标记。",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do 保留用户提供的完整 Logo。",
+      "Do 默认展示欢迎页，由店铺子导航按需打开数据与对话。",
+      "Do 使用等宽数字特性对齐金额，并保留两位小数。",
+      "Do 让待核对草稿、已入账、已作废与演示数据以文字可辨。",
+      "Do 保留键盘焦点与减少动态效果偏好。"
+    ],
+    "donts": [
+      "Don't 重绘 Logo 或替换官方 DSH 对话组件。",
+      "Don't 把缺失金额显示为零或填充未标记的虚构趋势。",
+      "Don't 为经营指标增加装饰性阴影、渐变或卡片层。"
+    ]
+  }
+}

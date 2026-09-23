@@ -1,0 +1,34 @@
+{
+  "checkedAt": "2026-09-22T11:13:58.014Z",
+  "scope": "Isolated post-remediation regression",
+  "checks": [
+    {
+      "name": "transaction accumulation",
+      "passed": true
+    },
+    {
+      "name": "empty note table edit",
+      "passed": true
+    },
+    {
+      "name": "revenue completeness",
+      "passed": true
+    },
+    {
+      "name": "stable creation undo receipt",
+      "passed": true
+    },
+    {
+      "name": "stable edit retry",
+      "passed": true
+    },
+    {
+      "name": "refund and occurrence time",
+      "passed": true
+    },
+    {
+      "name": "period query",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-09-22",
+  "automaticTests": {
+    "passed": 64,
+    "failed": 0
+  },
+  "build": "passed",
+  "browser": {
+    "sameChannelTransactions": [
+      100,
+      50
+    ],
+    "savedTime": "11:45",
+    "restoreAfterDeleteAndReload": true,
+    "incompleteEntryResumed": true,
+    "backupRestoreIntoEmptyShop": {
+      "entries": 4,
+      "auditEvents": 8
+    },
+    "mobileViewport": [
+      390,
+      844
+    ],
+    "documentWidth": 390,
+    "amountVisible": true,
+    "inputBorder": 0,
+    "inputOutlineStyle": "none",
+    "inputShadow": "none",
+    "consoleErrors": []
+  },
+  "production": {
+    "port": 3080,
+    "hostStartedWithCurrentCode": true,
+    "originalShopsVisible": true
+  },
+  "limitations": [
+    "No real network-fault browser injection",
+    "No physical mobile device run",
+    "Cashflow, bank reconciliation and invoice attachments absent"
+  ]
+}

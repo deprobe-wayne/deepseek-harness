@@ -1,0 +1,23 @@
+{
+  "run": "2026-09-22 current audit",
+  "passed": false,
+  "failure": "Upstream gateway 500 before successful turn completion",
+  "toolResults": [
+    {
+      "tool": "zhuanleme_report",
+      "isError": false
+    },
+    {
+      "tool": "zhuanleme_draft",
+      "isError": false
+    },
+    {
+      "tool": "zhuanleme_change",
+      "isError": false
+    },
+    {
+      "tool": "zhuanleme_rules",
+      "isError": false
+    }
+  ]
+}
