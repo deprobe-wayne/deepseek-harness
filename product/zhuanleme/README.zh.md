@@ -41,6 +41,8 @@ node product/zhuanleme/build.mjs
 
 ## DSH 扩展契约
 
+本包声明兼容本机固定的 DSH 0.1.6-alpha.2，以及已核对产品所用接口的 0.1.7-rc.1。完成完整的 0.1.7 构建与 Session 迁移验证前，正在运行的 Profile 仍使用当前固定版本。
+
 - `package.json` 声明 `dsh.bundle.patch`、`dsh.client.platform` 和 `./client`。
 - Host 声明依赖 `connection`、`webServer`、`workspaceRegistry`、`tools`、`profileContext` 和 `agents`。业务 API 注册到 `connection.fetch`，复用 DSH Host/Origin 和浏览器认证；运行状态来自官方 Agent 注册表。
 - UI 在 `slots.inject` 声明屏障内注册，使用 `priority: -100` 替换品牌叶子、工作区浏览区域和 `main.conversation`。不重复声明官方子 Slot，也不导入官方功能组件。
@@ -92,7 +94,7 @@ node --test product/zhuanleme/tests/*.test.mjs
 
 ## Profile 代码回归
 
-在外层目录运行 `.dsh-tools/node-v24.21.0-darwin-arm64/bin/node deepseek-harness/product/zhuanleme/tests/profile-smoke.mjs`。它从官方 Web 模板启动临时 Profile，经真实 Loader、AgentLoop、工具运行器和 SQLite 跑通查询、草稿与修改建议，验证持久化确认卡片标识以及人工确认前正式账目保持原值；脚本模型仅替代外部推理服务。测试会关闭子进程；完整会话和启动日志保留在打印的临时目录，日志含测试服务认证链接，不提交。
+在外层目录运行 `node deepseek-harness/product/zhuanleme/tests/profile-smoke.mjs`。它从官方 Web 模板启动临时 Profile，经真实 Loader、AgentLoop、工具运行器和 SQLite 跑通查询、草稿与修改建议，验证持久化确认卡片标识以及人工确认前正式账目保持原值；脚本模型仅替代外部推理服务。测试会关闭子进程；完整会话和启动日志保留在打印的临时目录，日志含测试服务认证链接，不提交。
 
 `ZLM_AUDIT_LIVE=1` 使用本项目已有模型配置做隔离实测，临时凭据与设置副本在运行结束后删除；服务商响应失败会使测试失败，不降级成模拟通过。`--browser` 或 `ZLM_AUDIT_BROWSER=1` 追加调用 `tests/review-smoke.mjs` 验证隔离页面；代码测试不替代页面验收。当前结果与限制见 [REMEDIATION.md](REMEDIATION.md)。
 

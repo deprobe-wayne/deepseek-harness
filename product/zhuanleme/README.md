@@ -41,6 +41,8 @@ Prefer absolute `link:` paths to avoid changes in relative resolution when a Pro
 
 ## DSH extension contract
 
+The package declares compatibility with the locally pinned DSH 0.1.6-alpha.2 and the 0.1.7-rc.1 interfaces checked for this product. Keep the active Profile on its pinned Harness until a full 0.1.7 build and Session migration have been verified.
+
 - `package.json` declares `dsh.bundle.patch`, `dsh.client.platform`, and `./client`.
 - The Host depends on `connection`, `webServer`, `workspaceRegistry`, `tools`, `profileContext`, and `agents`. Business APIs register with `connection.fetch`, reusing DSH Host/Origin checks and browser authentication. Running state comes from the official Agent registry.
 - UI registration occurs inside the `slots.inject` declaration barrier, using `priority: -100` to replace brand leaves, workspace browsing, and `main.conversation`. It does not redeclare official child Slots or import official feature components.
@@ -93,7 +95,7 @@ The browser acceptance script, `tests/browser-smoke.mjs`, targets only the isola
 
 ## Profile code regression
 
-From the outer directory, run `.dsh-tools/node-v24.21.0-darwin-arm64/bin/node deepseek-harness/product/zhuanleme/tests/profile-smoke.mjs`. It launches a temporary Profile from the official Web template, exercises queries, drafts, and changes through the real Loader, AgentLoop, tool runner, and SQLite, and verifies persistent card identifiers and unchanged posted records before manual confirmation. A scripted model replaces only external inference. The test closes its child process. Complete sessions and startup logs remain in the printed temporary directory; logs contain test authentication links and must not be committed.
+From the outer directory, run `node deepseek-harness/product/zhuanleme/tests/profile-smoke.mjs`. It launches a temporary Profile from the official Web template, exercises queries, drafts, and changes through the real Loader, AgentLoop, tool runner, and SQLite, and verifies persistent card identifiers and unchanged posted records before manual confirmation. A scripted model replaces only external inference. The test closes its child process. Complete sessions and startup logs remain in the printed temporary directory; logs contain test authentication links and must not be committed.
 
 `ZLM_AUDIT_LIVE=1` runs an isolated test with this project's existing model configuration, removing temporary credential and settings copies afterward. Provider failures fail the test instead of falling back to simulated success. `--browser` or `ZLM_AUDIT_BROWSER=1` additionally invokes `tests/review-smoke.mjs` to check the isolated page; code tests do not replace page acceptance. See [REMEDIATION.md](REMEDIATION.md) for current results and limitations.
 
