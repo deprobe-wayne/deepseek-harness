@@ -1,12 +1,48 @@
 /** Recorded npm evidence stays intact while authored files and exact edits remain checked. */
 
 import { describe, expect, it } from 'vitest'
-import { exactEditState, isRescopeExcluded } from './rescope-vendor.ts'
+import { exactEditState, isRescopeExcluded, rewritePackageNames } from './rescope-vendor.ts'
 
 const ANCHOR = '\n## Sync procedure'
 const INSERTED = `\n15. **rescope**: one log entry.\n${ANCHOR}`
 
 describe('rescope file selection', () => {
+  it.each([
+    'apps/cli/tests/optional-bundle-transitions.e2e.ts',
+    'apps/web/tests/agent-preset-selection.e2e.ts',
+    'apps/web/tests/developer-tools-settings.e2e.ts',
+    'docs/subsystems/schedule.md',
+    'docs/subsystems/schedule.zh.md',
+    'docs/user/guide/schedule.md',
+    'docs/user/guide/schedule.zh.md',
+    'docs/upgrade-guide/v0.2.0-rc.2/schedule-bundle-retired/guide.md',
+    'docs/upgrade-guide/v0.2.0-rc.2/schedule-bundle-retired/guide.zh.md',
+    'docs/upgrade-guide/v0.2.1-alpha.1/subagent-preset-composition/guide.md',
+    'docs/upgrade-guide/v0.2.1-alpha.1/subagent-preset-composition/guide.zh.md',
+    'packages/bundle/web-app/cordis.patch.yml',
+    'packages/client/ui-agent-preset/src/client/CreatePluginMenuItem.tsx',
+    'packages/client/ui-agent-preset/tests/components.client.spec.tsx',
+    'packages/client/ui-agent-preset/tests/create-plugin-menu-item.client.spec.tsx',
+    'packages/client/ui-agent-preset/tests/section-store.client.spec.ts',
+    'packages/extensions/cordis-host-runner/tests/inspect-registry.spec.ts',
+    'snapshots/session/cordis-inspect-liveness/client-fixture.mjs',
+    'snapshots/session/cordis-inspect-timeout/client-fixture.mjs',
+  ])('retains preset ids and Inspector event names in %s while renaming other packages', (file) => {
+    const preset = ['cor', 'dis'].join('')
+    const schema = ['schema', 'stery'].join('')
+    const identifiers = [preset, `${preset}/inspect-query`]
+    const source = [...identifiers, schema].map(value => JSON.stringify(value)).join('\n') + '\n'
+    expect(rewritePackageNames(source, file).text)
+      .toBe([...identifiers, '@deepseek-ai/schemastery'].map(value => JSON.stringify(value)).join('\n') + '\n')
+  })
+
+  it('still renames ordinary Cordis package imports and supports reversing them', () => {
+    const source = `import { Context } from "${['cor', 'dis'].join('')}"\n`
+    const scoped = 'import { Context } from "@deepseek-ai/cordis"\n'
+    expect(rewritePackageNames(source, 'packages/example/src/index.ts').text).toBe(scoped)
+    expect(rewritePackageNames(scoped, 'packages/example/src/index.ts', true).text).toBe(source)
+  })
+
   it('preserves the recorded npm resolution', () => {
     expect(isRescopeExcluded('scripts/dependency-catalog/package-lock.json')).toBe(true)
   })

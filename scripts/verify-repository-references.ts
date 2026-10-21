@@ -31,12 +31,21 @@ function isMaintained(file: string): boolean {
   return !excludedPrefixes.some(prefix => file.startsWith(prefix))
 }
 
+function referenceText(file: string, source: string): string {
+  if (!/(?:^|\/)uv\.lock$/.test(file)) return source
+  // Preserve quoted values and comments while masking generated artifact-size integers.
+  return source.replace(/"(?:\\.|[^"\\])*"|'[^']*'|#[^\n]*|(\bsize\s*=\s*)(\d[\d_]*)(?=\s*(?:[,}#]|$))/gm,
+    (match, prefix: string | undefined, size: string | undefined) =>
+      prefix === undefined || size === undefined ? match : `${prefix}${' '.repeat(size.length)}`)
+}
+
 /**
  * Inspect a maintained source file against known commit identifiers.
  * @param file - Repository-relative path used in diagnostics and exclusions.
  * @param source - File text or a symlink's stored target.
  * @param commits - Lowercase, unambiguous full or abbreviated commit identifiers.
- * @returns One finding per line and reference kind; digests and other Git object types are accepted.
+ * @returns One finding per line and reference kind; digests, other Git object types,
+ * and unquoted artifact-size integers in uv.lock are accepted.
  */
 export function findRepositoryReferences(
   file: string,
@@ -45,7 +54,7 @@ export function findRepositoryReferences(
 ): RepositoryReference[] {
   if (!isMaintained(file)) return []
   const references: RepositoryReference[] = []
-  for (const [index, line] of source.split('\n').entries()) {
+  for (const [index, line] of referenceText(file, source).split('\n').entries()) {
     if (organizationUrl.test(canonicalReferenceText(line).replace(kitRepositoryUrl, ''))) {
       references.push({ file, line: index + 1, kind: 'organization-url' })
     }
