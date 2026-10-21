@@ -59,3 +59,25 @@ test('opening a day with only posted expenses selects expenses, excluding drafts
     assert.equal(initialSection([{...entries[0],status:'draft'}],'2026-09-22',true),'expenses');
     assert.equal(initialSection([...entries,{...entries[0],kind:'revenue'}],'2026-09-22'),'income');
 });
+
+test('item names exclude quantity formulas while legacy details survive edits and retries', () => {
+    const ledger = new Ledger(':memory:');
+    try {
+        const legacy = { day, kind: 'purchase', amount: '20', note: '白菜 4斤×5元/斤', request: 'legacy' };
+        const id = ledger.add('shop', legacy);
+        const row = tableRows(ledger.rows('shop'), day, 'expenses')[0];
+        assert.equal(row.note, '白菜'); assert.equal(row.details, '4斤×5元/斤');
+        assert.equal(ledger.row('shop', id).note, legacy.note, 'Displaying a legacy row does not mutate it');
+        assert.equal(ledger.add('shop', legacy), id, 'Existing retry identities remain valid');
+        ledger.change('shop', savePayload({ ...row, amount: '25' }, 'edit', t));
+        assert.equal(ledger.row('shop', id).note, '白菜');
+        assert.equal(ledger.row('shop', id).details, '4斤×5元/斤');
+        ledger.mutate('shop', { op: 'undo', ...ledger.history('shop')[0].undo });
+        assert.equal(ledger.row('shop', id).note, legacy.note);
+        const structured = ledger.add('shop', { ...legacy, note: '白菜', details: '4斤×5元/斤', request: 'structured' });
+        assert.equal(ledger.row('shop', structured).details, '4斤×5元/斤');
+        for (const note of ['维生素B12', '可乐330ml', '3M胶带', '白菜 4斤坏叶已退', '店铺 4号']) {
+            assert.equal(tableRows([{ day, kind: 'purchase', status: 'posted', amount: 100, note }], day, 'expenses')[0].note, note);
+        }
+    } finally { ledger.close(); }
+});

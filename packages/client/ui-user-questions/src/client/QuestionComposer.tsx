@@ -324,7 +324,9 @@ function QuestionFlow({ pending, t, useStore, useQuestionCard, actions }: Questi
   }
 
   const choose = (label: string): void => {
-    updateDraft((current) => {
+    engage()
+    const nextDrafts = drafts.map((current, itemIndex) => {
+      if (itemIndex !== index) return current
       if (question.multiSelect === true) {
         const selected = current.selected.includes(label)
           ? current.selected.filter(item => item !== label)
@@ -332,7 +334,16 @@ function QuestionFlow({ pending, t, useStore, useQuestionCard, actions }: Questi
         return { ...current, selected, skipped: false }
       }
       return { selected: [label], custom: '', skipped: false }
-    }, question.multiSelect !== true && index < questions.length - 1 ? index + 1 : index)
+    })
+    setError(null)
+    if (question.multiSelect === true) {
+      replaceProgress(index, nextDrafts)
+    } else if (index < questions.length - 1) {
+      replaceProgress(index + 1, nextDrafts)
+    } else {
+      replaceProgress(index, nextDrafts)
+      submitDrafts(nextDrafts)
+    }
   }
 
   const answered = (item: QuestionDraftAnswer): boolean =>
@@ -508,11 +519,6 @@ function QuestionFlow({ pending, t, useStore, useQuestionCard, actions }: Questi
                       aria-label={display.label}
                       disabled={locked}
                       onClick={() => { choose(option.label) }}
-                      onKeyDown={(event) => {
-                        if (event.key !== 'Enter') return
-                        event.preventDefault()
-                        submitDrafts(drafts)
-                      }}
                     >
                       {question.multiSelect === true
                         ? (

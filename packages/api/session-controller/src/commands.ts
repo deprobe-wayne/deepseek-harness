@@ -4,7 +4,7 @@ import { modelAvailable } from './catalog.ts'
 import { randomUUID } from 'node:crypto'
 import type { Context } from '@deepseek-ai/cordis'
 import { brandString } from '@deepseek-ai/dsh-brand'
-import type { Agent, ModelSelection as AgentModelSelection } from '@deepseek-ai/dsh-agent'
+import type { Agent, ModelSelection } from '@deepseek-ai/dsh-agent'
 import { AttachmentError } from '@deepseek-ai/dsh-attachment'
 import type {
   AttachmentAdmissionPart, FileAttachmentRef, ImageAttachmentRef,
@@ -53,6 +53,17 @@ import type {
   SessionUpdateQueueValue,
   SessionRequestId,
 } from './types.ts'
+
+declare module '@deepseek-ai/cordis' {
+  interface Events {
+    /**
+     * Whether native model input or a mounted preprocessor can handle this Session's images.
+     * @mode waterfall
+     * @param payload - The receiving Agent and its selected model route.
+     */
+    'session/image-input'(payload: { agent: Agent; selection: ModelSelection }, next: () => Promise<boolean>): Promise<boolean>
+  }
+}
 
 interface SessionReadState {
   readonly id: SessionId
@@ -166,7 +177,7 @@ export class SessionCommandController {
             ? {}
             : { reasoningEffort: ReasoningEffortId(request.reasoningEffort) }),
         })
-        const selected: AgentModelSelection = {
+        const selected: ModelSelection = {
           provider: resolved.provider,
           model: resolved.model,
           ...(resolved.reasoningEffort === undefined
@@ -325,7 +336,11 @@ export class SessionCommandController {
         if (hasImage) {
           const current = this.agents.selectionFor(agent).current
           const model = await this.ctx.llm.resolveModelInfo(current.provider, current.model)
-          if (model.inputModalities !== undefined && !model.inputModalities.includes('image')) {
+          const acceptsImages = await this.ctx.waterfall(
+            'session/image-input', { agent, selection: current },
+            () => Promise.resolve(model.inputModalities === undefined || model.inputModalities.includes('image')),
+          )
+          if (!acceptsImages) {
             throw new RemoteError(
               'session/attachment-invalid',
               `Model "${current.model}" does not support image input.`,
@@ -362,7 +377,7 @@ export class SessionCommandController {
     return hasImage ? this.agents.serializeImageAdmission(agent, admit) : admit()
   }
 
-  private async requireModel(selection: Pick<AgentModelSelection, 'provider' | 'model'>): Promise<void> {
+  private async requireModel(selection: Pick<ModelSelection, 'provider' | 'model'>): Promise<void> {
     if (!await modelAvailable(this.ctx, selection)) {
       throw new RemoteError('session/model-unavailable', 'Select an available model before sending a message.',
         { provider: selection.provider, model: selection.model })

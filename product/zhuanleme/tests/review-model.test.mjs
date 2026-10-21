@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createReviewModel, reviewReference, turnReviewReferences, validReview } from '../src/client/review-model.js';
-import { shopForSession } from '../src/client/model.js';
+import { createReviewModel, reviewReference, turnReviewReferences, validReview, groupTurnReviews } from '../src/client/review-model.js';
+import { shopForSession, createNavigation } from '../src/client/model.js';
 
 const entryRef = { shop: 'shop-a', type: 'entry', id: 'entry-a' };
 const proposalRef = { shop: 'shop-a', type: 'proposal', id: 'proposal-a' };
@@ -333,4 +333,40 @@ test('a mutation that completes after disposal does not start a refresh', async 
     await confirming;
     assert.equal(model.getSnapshot(), snapshot);
     assert.equal(calls.length, 2);
+});
+
+test('one receipt review submits every displayed draft once and leaves settled rows alone', async () => {
+    const ref = { shop:'shop-a', type:'entries', ids:['entry-a','entry-b','entry-c'] }, calls=[], changes=[];
+    let items=[entry(),entry({id:'entry-b',note:'虾',version:3,amount:6000}),entry({id:'entry-c',note:'白菜',status:'posted',version:2})];
+    const model=createReviewModel(ref,{ changed:(shop,rows)=>changes.push({shop,rows}),request:async input=>{
+        calls.push(input);
+        if(input.op==='review-entries') return {...response('entries',null),items};
+        items=items.map(row=>row.status==='draft'?{...row,status:'posted',version:row.version+1}:row);
+        return {items};
+    }});
+    try {
+        await model.load();await model.resolve('confirm');
+        assert.deepEqual(calls[1],{op:'resolve-entries',shop:'shop-a',items:[{id:'entry-a',version:7},{id:'entry-b',version:3}],action:'confirm'});
+        assert.equal(changes[0].rows.length,2);
+        assert(model.getSnapshot().data.items.every(row=>row.status==='posted'));
+        await model.resolve('confirm');assert.equal(calls.length,3);
+        assert.equal(validReview({...response('entries',null),items:[items[1],items[0],items[2]]},ref),false);
+    } finally {model.dispose();}
+});
+
+test('receipt groups keep separate entry ids and ledger navigation reveals the receipt date and expense tab', () => {
+    assert.deepEqual(groupTurnReviews([entryRef,proposalRef,{...entryRef,id:'entry-b'}]),[
+        {shop:'shop-a',type:'entries',ids:['entry-a','entry-b']},proposalRef
+    ]);
+    const nav=createNavigation();
+    nav.select('shop-a','entries');
+    nav.revealEntries('shop-a',[entry()]);
+    assert.deepEqual(nav.getSnapshot().entryTarget,{day:'2026-09-22',section:'expenses',revision:1});
+    nav.revealEntries('shop-a',[entry()]);
+    assert.equal(nav.getSnapshot().entryTarget.revision,2,'A repeated view action resets stale filters');
+    nav.select('shop-b','entries');
+    assert.equal(nav.getSnapshot().entryTarget,null);
+    nav.revealEntries('shop-a',[entry()]);
+    assert.equal(nav.getSnapshot().entryTarget,null);
+    nav.dispose();
 });

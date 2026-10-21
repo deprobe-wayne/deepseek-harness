@@ -41,6 +41,8 @@ ctx.sessions.list()              // every live session, in creation order
 
 `session.append(type, data, opts?)` commits one typed event — it snapshots and freezes the payload, validates it as lossless JSON, and notifies observers. `session.deriveMessages()` projects the log into the `Message[]` the model sees, incrementally and cached:
 
+Downstream plugins mark purely informational records with `session.append(type, data, { ignorable: true })`. Unknown marked records remain in the log without changing derived history; required unknown records still reject restoration. The marker never substitutes for logging model-visible content as an ordinary message.
+
 ```text
 session.append('user/message', { role: 'user', content: [{ type: 'text', text: 'hello' }], source: { kind: 'user' } },
   { surfaceOp: 'append' })

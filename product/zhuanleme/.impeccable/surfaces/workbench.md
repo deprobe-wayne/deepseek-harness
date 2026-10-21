@@ -15,3 +15,7 @@ FIRST VIEWPORT: 默认单区欢迎。总览展开后，左侧经营区包含日�
 FORM: 延续既有 DSH 产品界面；不随机重选视觉风格。签名交互为店铺子目录按需展开数据与对话。
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster recording its source and usage rights
+
+
+## Interface simplification · 2026-10-20
+The final user instruction removes Plugins/Scheduled Tasks from the sidebar, and removes model, reasoning-strength and workspace-access controls entirely from both home and conversation composers. Backend settings remain authoritative; do not change model selections or grant wider permissions. This supersedes the intermediate reasoning-slider request. Keep the existing homepage, four photographic actions, shop navigation, voice and bookkeeping behavior. Use product-specific slot replacements and the renderer's stable sidebar data-slot styling hook. Capture an isolated real demo homepage for the website; remove the website's former centered app icon.

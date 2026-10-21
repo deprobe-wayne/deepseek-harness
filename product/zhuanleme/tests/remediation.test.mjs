@@ -84,7 +84,7 @@ test('v1 migration preserves old amounts, and persisted receipts survive restart
  const dir=mkdtempSync(join(tmpdir(),'zlm-migrate-')),path=join(dir,'ledger.sqlite');let l;
  try{
  l=new Ledger(path);const result=l.mutate(shop,add);l.db.exec('DROP TABLE operations; DROP TABLE shop_settings; DROP TABLE day_closures; PRAGMA user_version=1;');l.close();
- l=new Ledger(path);assert.equal(l.rows(shop)[0].amount,1000);assert.equal(l.db.prepare('PRAGMA user_version').get().user_version,2);
+ l=new Ledger(path);assert.equal(l.rows(shop)[0].amount,1000);assert.equal(l.db.prepare('PRAGMA user_version').get().user_version,3);
  // A pre-migration creation replay must still refer to its creation, not subsequent edits.
  l.change(shop,{id:result.id,version:1,action:'edit',day,kind:'purchase',amount:'20'});
  const replay=l.mutate(shop,add);assert.equal(replay.undo.version,1);assert.throws(()=>l.undo(shop,replay.undo));

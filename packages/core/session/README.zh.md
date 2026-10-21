@@ -41,6 +41,8 @@ ctx.sessions.list()              // every live session, in creation order
 
 `session.append(type, data, opts?)` 提交一个类型化事件——它先快照并冻结载荷、校验其为无损 JSON，再通知观察者。`session.deriveMessages()` 把日志投影为模型看到的 `Message[]`，采用增量且有缓存的方式：
 
+外部插件通过 `session.append(type, data, { ignorable: true })` 标记纯信息记录。未知但带标记的记录保留在日志中，不改变派生历史；未标记的未知记录仍拒绝恢复。该标记不能代替将模型可见内容记录为普通消息。
+
 ```text
 session.append('user/message', { role: 'user', content: [{ type: 'text', text: 'hello' }], source: { kind: 'user' } },
   { surfaceOp: 'append' })

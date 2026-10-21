@@ -1,6 +1,40 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write product/zhuanleme/README.md
-README.md: 26679e0f12fe514ce08ca70bd0b4fad84731cc0d
-README.zh.md: bffff03e044b5d3b2a0027619f62deeddcd8eddb
+/zhuanleme-dsh-plugin:
+  en: a5a8de87416afea9
+  zh: e042fb94d1da824b
+/zhuanleme-dsh-plugin/usage:
+  en: 9ffcbf10365e263c
+  zh: b05abcd5b9da1558
+/zhuanleme-dsh-plugin/usage/table-components-and-export:
+  en: 4a9d54e33268a420
+  zh: 22b8846fdb6b83df
+/zhuanleme-dsh-plugin/installation-and-build:
+  en: 2c23c02e0adfbe38
+  zh: 9023c8d588bdeddd
+/zhuanleme-dsh-plugin/dsh-extension-contract:
+  en: 67c3b60ca7b715d6
+  zh: 74fdd2028eab1e48
+/zhuanleme-dsh-plugin/ai-tools-and-model-experience:
+  en: e2b15e52a4aa308d
+  zh: cf3623485b4bea88
+/zhuanleme-dsh-plugin/data-and-cost-model:
+  en: 5ddaca568b2d43e7
+  zh: b60fc886745113d8
+/zhuanleme-dsh-plugin/validation:
+  en: 9aa36ee0c3043a69
+  zh: 2c20549a874d20a2
+/zhuanleme-dsh-plugin/retail-demo-shop:
+  en: 8136560056ea68df
+  zh: dbfc0764125231ac
+/zhuanleme-dsh-plugin/profile-code-regression:
+  en: 9aa35712f203475a
+  zh: 1adae0b6008cd271
+/zhuanleme-dsh-plugin/local-shop-projects:
+  en: 74cf6975fc75cd62
+  zh: 69699e1bf12f7eec
+/zhuanleme-dsh-plugin/daily-operations-and-recovery:
+  en: 07bdc4880dcb1129
+  zh: 3709e261100a96a3

@@ -832,6 +832,25 @@ describe('Web session model selection', () => {
       error: { code: 'session/attachment-invalid', details: { reason: 'MODEL_DOES_NOT_SUPPORT_IMAGES' } },
     })
 
+    const preprocessing = ctx.plugin({
+      apply(child: Context) {
+        child.on('session/image-input', async ({ agent: subject, selection }, next) => {
+          const native = await next()
+          return native || (subject === agent && selection.provider === 'text-only')
+        })
+      },
+    })
+    await preprocessing
+    expect(await remote.prompt(promptRequest({ sessionId, mode: 'queue', content: [image] })))
+      .toMatchObject({ ok: true, value: { accepted: true } })
+    expect(agent.session.snapshotEvents().findLast(event => event.type === 'model/selection')?.data)
+      .toMatchObject({ provider: 'text-only', model: 'plain' })
+    expect(followup).toHaveBeenCalledOnce()
+    followup.mockClear()
+    await preprocessing.dispose()
+    expect(await remote.prompt(promptRequest({ sessionId, mode: 'queue', content: [image] })))
+      .toMatchObject({ ok: false, error: { code: 'session/attachment-invalid', details: { reason: 'MODEL_DOES_NOT_SUPPORT_IMAGES' } } })
+
     expectValue(await remote.selectModel(request({
       sessionId, provider: 'image-capable', model: 'vision',
     })))

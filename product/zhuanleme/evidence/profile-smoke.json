@@ -1,9 +1,12 @@
 {
   "passed": true,
   "liveModel": false,
-  "tools": 5,
-  "modelRequests": 6,
+  "tools": 9,
+  "modelRequests": 12,
+  "providerRetries": 0,
   "recoveredToolErrors": 0,
   "pendingChanges": 2,
-  "confirmedByBrowser": false
+  "multiTurnRoundtrip": false,
+  "checkedAt": "2026-10-20T10:15:00.994Z",
+  "confirmedByBrowser": true
 }

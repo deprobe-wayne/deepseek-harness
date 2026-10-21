@@ -581,14 +581,10 @@ declare class Session {
    *
    * @param type - The event type (key of {@link SessionEventMap}).
    * @param data - The event payload; must be JSON-serializable.
-   * @param opts - Surface metadata: `surfaceOp` controls how the event enters
-   *   the ordered surface; `sourceEventSeqs` lists the seq numbers of earlier
-   *   events this one derives from. REQUIRED for
-   *   {@link SurfaceEventType} events (every message-producing event must
-   *   declare how it joins the surface, the sole source of derived model
-   *   history) and
-   *   rejected by the compiler for non-surface types like `turn/start` or
-   *   `assistant/attempt`. Assistant messages embed their exact provider
+   * @param opts - `ignorable: true` marks purely informational records safe to
+   *   retain without interpreting their type. Surface events also require
+   *   `surfaceOp` and may cite earlier `sourceEventSeqs`; these two fields are
+   *   forbidden for log-only types. Assistant messages embed their provider
    *   stream and cannot cite top-level source events.
    * @returns the logged event — its assigned `seq`/`time` plus the SNAPSHOT of
    *   `data` that entered the log, so reading `event.data` back sees the logged
@@ -611,7 +607,7 @@ declare class Session {
   append<T extends SessionEventType>(
     type: T,
     data: SessionEventMap[T],
-    ...opts: T extends SurfaceEventType ? [opts: SurfaceIntent<T>] : []
+    ...opts: T extends SurfaceEventType ? [opts: SurfaceIntent<T> & { ignorable?: true }] : [opts?: { ignorable?: true }]
     ): SessionEvent<T>;
   /**
    * The {@link EpochHeader} in force after the log's last header event — the
@@ -1336,4 +1332,23 @@ Awaited parallel durability checkpoint: every listener runs and the caller await
 Types: [Scoped](scope.md)
 
 Source: [`packages/core/session/src/index.ts`](../../packages/core/session/src/index.ts)
+
+<a id="sessionimage-input--waterfall"></a>
+
+#### `session/image-input` — waterfall
+
+Whether native model input or a mounted preprocessor can handle this Session's images.
+
+```ts cordis-catalog
+/**
+ * Whether native model input or a mounted preprocessor can handle this Session's images.
+ * @mode waterfall
+ * @param payload - The receiving Agent and its selected model route.
+ */
+'session/image-input'(payload: { agent: Agent; selection: ModelSelection }, next: () => Promise<boolean>): Promise<boolean>
+```
+
+Types: [Agent](core.md) · [ModelSelection](core.md)
+
+Source: [`packages/api/session-controller/src/commands.ts`](../../packages/api/session-controller/src/commands.ts)
 <!-- END GENERATED cordis-surface -->

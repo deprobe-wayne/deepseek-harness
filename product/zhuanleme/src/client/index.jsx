@@ -4,11 +4,16 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { api, createModel, createNavigation, shopForSession } from './model.js';
 import { zh, en } from './locales.js';
 import { ReviewCard, TurnReviews } from './review-card.jsx';
+import { AssistantModes } from './assistant-mode.jsx';
 import { LedgerGrid } from './ledger-grid.jsx';
 import { ConversationList } from './conversation-actions.jsx';
 import { createConversationActions } from './conversation-model.js';
 import { conversationZh, conversationEn } from './conversation-locales.js';
 import css from './zhuanleme.module.css';
+import paperPhoto from '../../assets/home/paper.jpg';
+import analysisPhoto from '../../assets/home/analysis-v2.jpg';
+import overviewPhoto from '../../assets/home/overview-v2.jpg';
+import pagesPhoto from '../../assets/home/pages.jpg';
 const NS = 'zhuanleme';
 const categories = ['materials', 'labor', 'rent', 'utilities', 'platform', 'other'];
 const channels = ['store', 'meituan', 'douyin', 'other'];
@@ -17,6 +22,7 @@ const money = n => n === null || n === undefined ? '—' : new Intl.NumberFormat
 const Icon = ({ name = 'plus', size = 18 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{name === 'plus' ? <path d="M12 5v14M5 12h14"/> : name === 'chart' ? <path d="M4 20V12h4v8m3 0V5h4v15m3 0v-9h4v9M2 20h21"/> : name === 'table' ? <path d="M3 4h18v16H3zM3 9h18M3 14h18M9 4v16"/> : name === 'shop' ? <><path d="M4 10v10h16V10M3 10l2-6h14l2 6M9 20v-6h6v6"/><path d="M3 10c0 3 4 3 4 0 0 3 5 3 5 0 0 3 5 3 5 0 0 3 4 3 4 0"/></> : <path d="M5 6h14v10H9l-4 4z"/>}</svg>;
 function BrandMark() { return <img className={css.logo} src="/zhuanleme/logo.png" alt=""/>; }
 function BrandName({ t }) { return <strong className={css.brand}>{t('brand')}</strong>; }
+function ManagedControl() { return null; }
 function ShopDeleteConfirm({ shop, onDelete, onClose, t }) {
     const dialog=useRef(null),[pending,setPending]=useState(false),[error,setError]=useState('');
     useEffect(()=>{const node=dialog.current;node.showModal();return()=>node.close();},[]);
@@ -151,7 +157,7 @@ function PendingChanges({ proposals, t, busy, onAction }) {
         })}</div><button disabled={busy} onClick={() => onAction(p, 'confirm')}>{t('applyChange')}</button><button disabled={busy} onClick={() => onAction(p, 'reject')}>{t('rejectChange')}</button>
     </div>)}</section>;
 }
-function LedgerPanel({ sessionId, t, shop, day, setDay, state, load, mutate, view, closePanel, openEntries }) {
+function LedgerPanel({ sessionId, t, shop, day, setDay, state, load, mutate, view, closePanel, openEntries, entryTarget }) {
     const [form, setForm] = useState(null), [error, setError] = useState(''), [busy, setBusy] = useState(false), [voidId, setVoidId] = useState(null);
     useEffect(() => { setForm(null); setError(''); setVoidId(null); }, [shop?.id]);
     const data = state.shop === shop?.id ? state.data : null;
@@ -169,23 +175,63 @@ function LedgerPanel({ sessionId, t, shop, day, setDay, state, load, mutate, vie
     if (!shop)
         return <section className={css.empty}><Icon name="shop" size={30}/><h2>{t('pickShop')}</h2><p>{t('pickHint')}</p></section>;
     return <section className={css.ledger} data-view={view}><header className={css.header}><div><h1>{t(view)}</h1><p>{shop.title}</p></div><input type="date" aria-label={t('date')} value={day} onChange={e => { if (e.target.value)
-        setDay(e.target.value); }}/></header>{(state.error || error) && <div role="alert" className={css.error}>{state.error || error}<button onClick={() => load(shop.id, day)}>{t('retry')}</button></div>}{form?.kind === 'entry' && form.row && <LedgerGrid key={form.row.id} shop={shop.id} entries={[form.row]} includeDrafts day={form.row.day} t={t} onSave={input => save(input)}/>}{form?.kind === 'rules' && <RulesForm t={t} rules={form.rules} day={form.day} onCancel={() => setForm(null)} onSave={rules => save({ op: 'rules', rules, version: form.version })}/>}{!data ? <p className={css.hint} role="status">{t('loading')}</p> : <>{view === 'overview' && <><PendingChanges proposals={data.proposals || []} t={t} busy={busy} onAction={(p, actionType) => action(p, actionType, 'proposal')}/>{data.entries.some(r => r.status === 'draft') && <section className={css.drafts}><h3>{t('drafts')}</h3><p className={css.hint}>{t('draftHint')}</p>{data.entries.filter(r => r.status === 'draft').map(r => <div className={css.draft} key={r.id}><div><strong>{r.day} · {t(r.kind)} · {t(r.category || r.channel || 'purchase')}</strong><p>{r.note}</p></div><b>{money(r.amount)}</b><button disabled={busy} onClick={() => action(r, 'confirm')}>{t('confirm')}</button><button disabled={busy} onClick={() => setForm({ kind: 'entry', row: r })}>{t('edit')}</button><button disabled={busy} onClick={() => action(r, 'void')}>{t('void')}</button></div>)}</section>}</>}{view === 'overview' ? <><div className={css.metrics}>{[['revenue', data.summary.revenue], ['cost', data.summary.cost], ['profit', data.summary.profit]].map(([k, n]) => <div key={k}><span>{t(k)}</span><strong data-profit={k === 'profit'}>{n === null ? t('missing') : money(n)}</strong></div>)}</div><Trend rows={data.trend} shop={shop.id} day={day} onDate={setDay} t={t}/><CostChart key={day} summary={data.summary} t={t}/><details className={css.costDetails}><summary>{t('details')}</summary><div className={css.sectionHead}><h3>{t('breakdown')}</h3><span className={css.hint}>{day}</span></div><table className={css.table}><thead><tr><th>{t('item')}</th><th>{t('basis')}</th><th>{t('amount')}</th></tr></thead><tbody>{data.summary.costs.map(r => <tr key={r.category}><td>{t(r.category)}</td><td className={css.muted}>{t(`${r.basis}Basis`)}{r.rule?.method === 'percent' && <small>{r.rule.value / 100}% · {t(r.rule.base)}</small>}</td><td>{r.amount === null ? t('missing') : money(r.amount)}</td></tr>)}</tbody><tfoot><tr><th colSpan={2}>{t(data.summary.complete ? 'total' : 'known')}</th><td>{money(data.summary.knownCost)}</td></tr></tfoot></table>{!data.summary.complete && <p className={css.hint}>{t('costHint')}</p>}</details></> : <LedgerGrid key={shop.id} sessionId={sessionId} shop={shop.id} savedHistory={data.history||[]} entries={data.entries} day={day} t={t} onSave={payload => save(payload)}/> }</>}</section>;
+        setDay(e.target.value); }}/></header>{(state.error || error) && <div role="alert" className={css.error}>{state.error || error}<button onClick={() => load(shop.id, day)}>{t('retry')}</button></div>}{form?.kind === 'entry' && form.row && <LedgerGrid key={form.row.id} shop={shop.id} entries={[form.row]} includeDrafts day={form.row.day} t={t} onSave={input => save(input)}/>}{form?.kind === 'rules' && <RulesForm t={t} rules={form.rules} day={form.day} onCancel={() => setForm(null)} onSave={rules => save({ op: 'rules', rules, version: form.version })}/>}{!data ? <p className={css.hint} role="status">{t('loading')}</p> : <>{view === 'overview' && <><PendingChanges proposals={data.proposals || []} t={t} busy={busy} onAction={(p, actionType) => action(p, actionType, 'proposal')}/>{data.entries.some(r => r.status === 'draft') && <section className={css.drafts}><h3>{t('drafts')}</h3><p className={css.hint}>{t('draftHint')}</p>{data.entries.filter(r => r.status === 'draft').map(r => <div className={css.draft} key={r.id}><div><strong>{r.day} · {t(r.kind)} · {t(r.category || r.channel || 'purchase')}</strong><p>{r.note}</p></div><b>{money(r.amount)}</b><button disabled={busy} onClick={() => action(r, 'confirm')}>{t('confirm')}</button><button disabled={busy} onClick={() => setForm({ kind: 'entry', row: r })}>{t('edit')}</button><button disabled={busy} onClick={() => action(r, 'void')}>{t('void')}</button></div>)}</section>}</>}{view === 'overview' ? <><div className={css.metrics}>{[['revenue', data.summary.revenue], ['cost', data.summary.cost], ['profit', data.summary.profit]].map(([k, n]) => <div key={k}><span>{t(k==='profit'?'profit_'+data.summary.profitStatus:k)}</span><strong data-profit={k === 'profit'}>{n === null ? t('missing') : money(n)}</strong></div>)}</div>{data.summary.profitStatus!=='verified'&&<p className={css.hint} role="status">{t('profitHint_'+data.summary.profitStatus)}</p>}<Trend rows={data.trend} shop={shop.id} day={day} onDate={setDay} t={t}/><CostChart key={day} summary={data.summary} t={t}/><details className={css.costDetails}><summary>{t('details')}</summary><div className={css.sectionHead}><h3>{t('breakdown')}</h3><span className={css.hint}>{day}</span></div><table className={css.table}><thead><tr><th>{t('item')}</th><th>{t('basis')}</th><th>{t('amount')}</th></tr></thead><tbody>{data.summary.costs.map(r => <tr key={r.category}><td>{t(r.category)}</td><td className={css.muted}>{t(`${r.basis}Basis`)}{r.rule?.method === 'percent' && <small>{r.rule.value / 100}% · {t(r.rule.base)}</small>}</td><td>{r.amount === null ? t('missing') : money(r.amount)}</td></tr>)}</tbody><tfoot><tr><th colSpan={2}>{t(data.summary.complete ? 'total' : 'known')}</th><td>{money(data.summary.knownCost)}</td></tr></tfoot></table>{!data.summary.complete && <p className={css.hint}>{t('costHint')}</p>}</details></> : <LedgerGrid key={shop.id} sessionId={sessionId} shop={shop.id} savedHistory={data.history||[]} entryTarget={entryTarget} entries={data.entries} day={day} t={t} onSave={payload => save(payload)}/> }</>}</section>;
 }
 function ProductViews({renderSlot}) { return <div className={css.transcript}>{renderSlot('conversation.session', {})}</div>; }
+function HomeViews() { return null; }
+function HomeCards({ t, go, startAssistant, shop, onError }) {
+    const cards = [
+        { key: 'record', label: 'homeCardRecord', photo: paperPhoto },
+        { key: 'analysis', label: 'homeCardAnalyze', photo: analysisPhoto },
+        { key: 'overview', label: 'homeCardOverview', photo: overviewPhoto },
+        { key: 'entries', label: 'homeCardEntries', photo: pagesPhoto },
+    ];
+    return <nav className={css.homeDeck} aria-label={t('homeActions')}>
+        {cards.map((card, index) => <button key={card.key} type="button" className={css.homeCard} data-card={index} onClick={() => {
+            if (card.key === 'record' || card.key === 'analysis') void startAssistant(shop, card.key).catch(onError);
+            else go(card.key);
+        }}><img className={css.cardPhoto} src={card.photo} alt="" draggable={false}/><span className={css.cardLabel}>{t(card.label)}</span></button>)}
+    </nav>;
+}
 function Workbench(props) {
-    const { useShopState, t, useSession, useSessions, useWorkspaces, useLedger, useProductNavigation, selectPage, openDemo, sessionId, renderFactorySlot, load, mutate, syncShop } = props;
+    const { useShopState, t, useSession, useSessions, useWorkspaces, useLedger, useProductNavigation, selectPage, openDemo, sessionId, renderFactorySlot, load, mutate, syncShop, startAssistant, prepareHome } = props;
     const session=useSession(s=>s), byId=useSessions(s=>s.byId), workspaces=useWorkspaces(s=>s.items.map(w=>({...w,id:w.workspaceId}))), state=useLedger(s=>s), nav=useProductNavigation(s=>s);
     const deletedShops=useShopState(s=>s.deleted);
     const cwd=sessionId?byId[sessionId]?.cwd:undefined, shop=shopForSession(workspaces.filter(w=>!deletedShops.includes(w.id)),sessionId,cwd), view=nav.shopId===shop?.id?nav.view:'home', split=view==='overview'||view==='entries';
     useEffect(()=>{if(shop)syncShop(shop.id);},[shop?.id,syncShop]);
     const [day,setDay]=useState(today), [mobile,setMobile]=useState('ledger'), [error,setError]=useState('');
+    const homeSession=useRef(null);
+    useEffect(()=>{
+        if(view!=='home'){homeSession.current=null;return;}
+        if(!shop||!session)return;
+        if(session.running){void selectPage(shop.id,'chat').catch(e=>setError(e.message));return;}
+        if(session.blank){homeSession.current=sessionId;return;}
+        if(homeSession.current===sessionId){void selectPage(shop.id,'chat').catch(e=>setError(e.message));return;}
+        let active=true;
+        void prepareHome(shop.id).catch(e=>{if(active)setError(e.message);});
+        return()=>{active=false;};
+    },[view,shop?.id,sessionId,session?.blank,session?.running,prepareHome,selectPage]);
+    useEffect(()=>{if(nav.shopId===shop?.id&&nav.entryTarget){setDay(nav.entryTarget.day);setMobile('ledger');}},[nav.entryTarget,shop?.id]);
     useEffect(()=>{if(!split)return;void load(shop?.id,day);const timer=setInterval(()=>{void load(shop?.id,day,true);},5000);return()=>clearInterval(timer);},[shop?.id,day,load,split]);
     useEffect(()=>{setMobile('ledger');},[view,shop?.id]);
     useEffect(()=>{if(view!=='overview'||!shop||!sessionId)return;let active=true;void api({op:'view-context',shop:shop.id,sessionId,day,section:null,search:''}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[view,shop?.id,sessionId,day]);
     const settling=session?.openState==='loading', hero=!session||session.blank&&!session.running&&!session.promptAttempted;
     const go=page=>selectPage(shop.id,page).catch(e=>setError(e.message));
-    if(view==='home')return <main className={`${css.root} ${css.homeRoot}`}><header className={css.homeHeader}><span>{shop?.title||t('brand')}</span><span>{t('assistant')}</span></header><section className={css.homeWelcome}><BrandMark/><h1>{t(shop?'homeTitle':'homeNoShop')}</h1><p>{t('homeHint')}</p>{shop?<><div className={css.homeActions}><button className={css.primary} onClick={()=>go('overview')}><Icon name="chart"/>{t('openOverview')}</button><button onClick={()=>go('entries')}><Icon name="table"/>{t('openEntries')}</button><button onClick={()=>go('chat')}><Icon name="chat"/>{t('openChat')}</button></div><p className={css.homeGuide}>{t('homeGuide')}</p></>:<><p>{t('pickShop')}</p><button className={css.primary} onClick={()=>openDemo().catch(e=>setError(e.message))}>{t('loadDemo')}</button></>}{error&&<p role="alert" className={css.error}>{error}</p>}</section><footer className={css.homeFooter}>{t('homeReady')}</footer></main>;
-    return <div className={`${css.root} ${split?'':css.chatOnly}`} data-mobile={mobile}>{split&&<><nav className={css.mobileTabs}>{['ledger','chat'].map(v=><button key={v} aria-pressed={mobile===v} onClick={()=>setMobile(v)}>{t(v==='ledger'?view:v)}</button>)}</nav><div className={css.dataPane}><LedgerPanel key={shop?.id} sessionId={sessionId} t={t} shop={shop} day={day} setDay={setDay} state={state} load={load} mutate={mutate} view={view} closePanel={()=>go('home')} openEntries={()=>go('entries')}/></div></>}<div className={css.chatPane}><div className={css.chatHeader}><BrandMark/><span>{t('brand')} · {t('assistant')}</span>{!split&&<button onClick={()=>go('home')}>{t('home')}</button>}</div>{hero&&<div className={css.welcome}><h2>{t('welcome')}</h2><p>{t(shop?'chatHint':'pickShop')}</p></div>}{sessionId&&renderFactorySlot('conversation.content',{variant:'embedded',phase:settling?'settling':'active',hero:false},{slots:{views:ProductViews}})}</div></div>;
+    if(view==='home')return <main className={`${css.root} ${css.homeRoot}`}>
+        <header className={css.homeHeader}>{shop?.title||t('brand')}</header>
+        <section className={css.homeWelcome}>
+            <h1>{t(shop?'homeTitle':'homeNoShop')}</h1>
+            {shop?<HomeCards t={t} go={go} startAssistant={startAssistant} shop={shop.id} onError={e=>setError(e.message)}/>:<>
+                <p>{t('pickShop')}</p>
+                <button className={css.homeSecondary} onClick={()=>openDemo().catch(e=>setError(e.message))}>{t('loadDemo')}</button>
+            </>}
+            {error&&<p role="alert" className={css.error}>{error}</p>}
+        </section>
+        {shop&&<div className={css.homeComposer} aria-busy={!session?.blank}>
+            {session?.blank?renderFactorySlot('conversation.content',{variant:'embedded',phase:settling?'settling':'active',hero:false},{slots:{views:HomeViews}}):<p role="status">{t('homePreparing')}</p>}
+        </div>}
+    </main>;
+    return <div className={`${css.root} ${split?'':css.chatOnly}`} data-mobile={mobile}>{split&&<><nav className={css.mobileTabs}>{['ledger','chat'].map(v=><button key={v} aria-pressed={mobile===v} onClick={()=>setMobile(v)}>{t(v==='ledger'?view:v)}</button>)}</nav><div className={css.dataPane}><LedgerPanel key={shop?.id} sessionId={sessionId} t={t} shop={shop} day={day} setDay={setDay} entryTarget={nav.entryTarget} state={state} load={load} mutate={mutate} view={view} closePanel={()=>go('home')} openEntries={()=>go('entries')}/></div></>}<div className={css.chatPane}>{shop&&sessionId?<AssistantModes key={sessionId} shop={shop.id} sessionId={sessionId} running={session?.running} hero={hero} t={t} onHome={!split?()=>go('home'):undefined}/>:<div className={css.welcome}><p>{t('pickShop')}</p></div>}{sessionId&&renderFactorySlot('conversation.content',{variant:'embedded',phase:settling?'settling':'active',hero:false},{slots:{views:ProductViews}})}</div></div>;
 }
 export const inject = ['slots', 'locale', 'uiWorkspace', 'workspaces', 'sessions'];
 export function apply(ctx) {
@@ -196,7 +242,8 @@ export function apply(ctx) {
         m.dispose(); models.clear(); }, 'zhuanleme: data models');
     const reviewListeners = new Set();
     const subscribeChanges = fn => { reviewListeners.add(fn); return () => reviewListeners.delete(fn); };
-    const changed = shop => {
+    const changed = (shop, entries = []) => {
+        if (pageState.getSnapshot().view === 'entries') pageState.revealEntries(shop, entries);
         for (const model of models.values()) {
             const state = model.getSnapshot();
             if (state.shop === shop && state.day) void model.load(shop, state.day, true);
@@ -214,17 +261,22 @@ export function apply(ctx) {
     ctx.effect(() => () => pageState.dispose(), 'zhuanleme: navigation');
     let navigationGeneration=0;
     const selectPage=async (id,view) => { const version=++navigationGeneration; if(pageState.getSnapshot().shopId!==id)await navigation.openWorkspace(id); if(version===navigationGeneration)pageState.select(id,view); };
+    const openLedger=async(shop,entries)=>{await selectPage(shop,'entries');pageState.revealEntries(shop,entries);};
+    const startAssistant=async(shop,mode)=>{const sessionId=await navigation.connectWorkspace(shop);await api({op:'assistant-mode',shop,sessionId,mode});pageState.select(shop,'chat');navigation.openSession(sessionId);};
+    const prepareHome=async shop=>{await navigation.openWorkspace(shop);};
     const syncShop=id=>{if(pageState.getSnapshot().shopId!==id)pageState.select(id,'home');};
     const openDemo=async()=>{const result=await api({op:'create-demo'});await shopActions.load();await selectPage(result.workspace.id,'home');};
     const register = (name, component, options = {}) => ctx.slots.inject(name, () => ctx.slots.register({ name, priority: -100, locale: NS, ...options }, component));
     for (const key of ['zhuanleme_draft', 'zhuanleme_change', 'zhuanleme_rules'])
         register('tool.call.toolview', ReviewCard, { key, inject: () => ({ changed, subscribeChanges }) });
-    register('conversation.chat.turnTail', TurnReviews, { id: 'zhuanleme-review', inject: () => ({ changed, subscribeChanges }) });
+    register('conversation.chat.turnTail', TurnReviews, { id: 'zhuanleme-review', inject: () => ({ changed, subscribeChanges, openLedger }) });
     register('sidebar.brand.mark', BrandMark);
     register('sidebar.brand.name', BrandName);
     register('conversation.hero.brand.mark', BrandMark);
     register('conversation.input.right', VoiceInput, {id:'zhuanleme-voice'});
-    register('sidebar.workspaces', Shops, { inject: () => ({ loadShops:shopActions.load, removeShop:shopActions.remove, restoreShop:shopActions.restore, hooks: { shopState:shopActions, productNavigation: pageState, conversationState: conversationActions }, reloadConversations: conversationActions.load, pinSession: conversationActions.pinSession, archiveSession: conversationActions.archiveSession, unarchiveSession: conversationActions.unarchiveSession, deleteSession: conversationActions.deleteSession, restoreSession: conversationActions.restoreSession, selectPage, openDemo, openShop: id => selectPage(id,'home'), openSession: async (id, shopId) => { await navigation.openSession(id); pageState.select(shopId,'chat'); }, newChat: async id => { await navigation.openWorkspace(id); pageState.select(id,'chat'); }, createShop: async (title) => { const result = await api({ op: 'create-shop', title }); await selectPage(result.workspace.id,'home'); } }) });
+    register('conversation.input.model', ManagedControl);
+    register('conversation.input.permission', ManagedControl);
+    register('sidebar.workspaces', Shops, { inject: () => ({ loadShops:shopActions.load, removeShop:shopActions.remove, restoreShop:shopActions.restore, hooks: { shopState:shopActions, productNavigation: pageState, conversationState: conversationActions }, reloadConversations: conversationActions.load, pinSession: conversationActions.pinSession, archiveSession: conversationActions.archiveSession, unarchiveSession: conversationActions.unarchiveSession, deleteSession: conversationActions.deleteSession, restoreSession: conversationActions.restoreSession, selectPage, openDemo, openShop: id => selectPage(id,'home'), openSession: (id, shopId) => { pageState.select(shopId,'chat'); navigation.openSession(id); }, newChat: async id => { pageState.select(id,'chat'); await navigation.openWorkspace(id); }, createShop: async (title) => { const result = await api({ op: 'create-shop', title }); await selectPage(result.workspace.id,'home'); } }) });
     register('main.conversation', Workbench, { inject: sessionId => { const key = sessionId || 'blank'; if (!models.has(key))
-            models.set(key, createModel()); const model = models.get(key); return { hooks: { shopState:shopActions, ledger: model, productNavigation: pageState }, selectPage, openDemo, syncShop, load: model.load, mutate }; } });
+            models.set(key, createModel()); const model = models.get(key); return { hooks: { shopState:shopActions, ledger: model, productNavigation: pageState }, selectPage, openDemo, syncShop, load: model.load, mutate, startAssistant, prepareHome }; } });
 }

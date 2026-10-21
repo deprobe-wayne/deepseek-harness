@@ -33,6 +33,9 @@ importers:
       '@deepseek-ai/cordis':
         specifier: link:../../vendor/cordis
         version: link:../../vendor/cordis
+      '@deepseek-ai/dsh-llm':
+        specifier: link:../../packages/llm/llm
+        version: link:../../packages/llm/llm
       '@deepseek-ai/dsh-system-prompt':
         specifier: link:../../packages/core/system-prompt
         version: link:../../packages/core/system-prompt

@@ -1,4 +1,5 @@
 import { api } from './model.js';
+import {AccountingEditor} from './accounting-editor.jsx';
 import { LedgerManager } from './ledger-manager.jsx';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MaterialReactTable, useMaterialReactTable, createRow, MRT_EditActionButtons } from 'material-react-table';
@@ -28,11 +29,12 @@ export function LedgerGrid(props) {
         shape: { borderRadius: 10 },
         components: { MuiButton: { defaultProps: { disableElevation: true } }, MuiDialog: { styleOverrides: { paper: { borderRadius: 16 } } } },
     }), [dark]);
-    return <ThemeProvider theme={theme}><LedgerTable key={`${props.day}-${props.includeDrafts}`} {...props}/></ThemeProvider>;
+    return <ThemeProvider theme={theme}><LedgerTable key={`${props.day}-${props.includeDrafts}-${props.entryTarget?.revision || 0}`} {...props}/></ThemeProvider>;
 }
 
-function LedgerTable({ entries, day, t, onSave, shop, sessionId, savedHistory = [], includeDrafts = false }) {
-    const [section, setSection] = useState(() => initialSection(entries, day, includeDrafts));
+function LedgerTable({ entries, day, t, onSave, shop, sessionId, savedHistory = [], includeDrafts = false, entryTarget }) {
+    const [accounting,setAccounting]=useState(null);
+    const [section, setSection] = useState(() => entryTarget?.day === day ? entryTarget.section : initialSection(entries, day, includeDrafts));
     const [busy, setBusy] = useState(false), [error, setError] = useState(''), [exportAnchor, setExportAnchor] = useState(null);
     const mobile = useMediaQuery('(max-width:600px)'), storageKey = 'zlm-draft:'+shop+':'+day;
     const readStored = () => { try { return JSON.parse(localStorage.getItem(storageKey)||'null'); } catch { return null; } };
@@ -52,6 +54,7 @@ function LedgerTable({ entries, day, t, onSave, shop, sessionId, savedHistory = 
         { accessorKey:'account', header:t('account'), size:140 },
         { accessorKey:'mode', header:t('entryMode'), size:100, editVariant:'select', editSelectOptions:['transaction','summary'].map(value=>({value,label:t(value)})), Cell:({cell})=>t(cell.getValue()||'summary') },
         { accessorKey: 'note', header: t('item'), size: mobile ? 130 : 240, muiEditTextFieldProps: { inputProps: { maxLength: 200 } } },
+        { accessorKey: 'details', header: t('entryDetails'), size: 220, muiEditTextFieldProps: { inputProps: { maxLength: 200 } } },
         { accessorKey: 'amount', header: t('amount'), size: 140, sortingFn: (a, b) => (a.original.refundOf?-1:1)*Number(a.original.amount) - (b.original.refundOf?-1:1)*Number(b.original.amount), muiTableBodyCellProps: { align: 'right', sx: { fontVariantNumeric: 'tabular-nums', fontWeight: 600 } }, muiTableHeadCellProps: { align: 'right' }, muiEditTextFieldProps: { required: true, inputProps: { inputMode: 'decimal' } }, Cell: ({ cell, row }) => (row.original.refundOf ? '-' : '') + Number(cell.getValue()).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
         { accessorKey: 'type', header: t(section === 'income' ? 'channel' : 'gridType'), size: 160, editVariant: 'select', editSelectOptions: types.map(value => ({ value, label: typeLabel(value, t) })), filterVariant: 'select', filterSelectOptions: types.map(value => ({ value, label: typeLabel(value, t) })), Cell: ({ cell }) => typeLabel(cell.getValue(), t), muiEditTextFieldProps: { required: true } },
     ], [section, t, mobile, entries]);
@@ -105,7 +108,7 @@ function LedgerTable({ entries, day, t, onSave, shop, sessionId, savedHistory = 
     const download = (format, selected = false) => {
         try {
             const rows = (selected ? table.getSelectedRowModel() : table.getPrePaginationRowModel()).rows.map(row => row.original);
-            const sheet = XLSX.utils.aoa_to_sheet([[t('date'), t('item'), t(section === 'income' ? 'channel' : 'gridType'), t('amount')], ...rows.map(row => [[row.day,row.time].filter(Boolean).join(' '), exportText(row.note), typeLabel(row.type, t), (row.refundOf?-1:1)*Number(row.amount)])]);
+            const sheet = XLSX.utils.aoa_to_sheet([[t('date'), t('item'), t('entryDetails'), t(section === 'income' ? 'channel' : 'gridType'), t('amount'),t('revenueBasis'),t('platformFee'),t('costCoverage'),t('costFrom'),t('costTo')], ...rows.map(row => [[row.day,row.time].filter(Boolean).join(' '), exportText(row.note), exportText(row.details), typeLabel(row.type, t), (row.refundOf?-1:1)*Number(row.amount),row.kind==='revenue'?t('basis_'+(row.revenueBasis||'gross')):'',row.platformFee===undefined?'':(row.refundOf?-1:1)*Number(row.platformFee),row.kind==='actual'?t(row.costCoverage?'coverage_'+row.costCoverage:'legacyCoverage'):'',row.costFrom||'',row.costTo||''])]);
             sheet['!cols'] = [{ wch: 22 }, { wch: 36 }, { wch: 26 }, { wch: 16 }];
             const book = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(book, sheet, t(section === 'income' ? 'gridIncome' : 'gridExpenses'));
             XLSX.writeFile(book, `${t(section === 'income' ? 'gridIncome' : 'gridExpenses')}-${day}.${format}`, { bookType: format });
@@ -117,7 +120,7 @@ function LedgerTable({ entries, day, t, onSave, shop, sessionId, savedHistory = 
         localization: { ...(t('gridIncome') === '收入' ? MRT_Localization_ZH_HANS : MRT_Localization_EN), create: t('gridAddRecord'), edit: t('gridEdit'), save: t('gridSave'), cancel: t('cancel'), actions: t('action') },
         createDisplayMode: 'row', editDisplayMode: includeDrafts ? 'modal' : 'cell', enableEditing: () => !pending.current && !failed, enableRowActions: true, enableRowSelection: false, enableColumnActions: false,
         enableColumnPinning: true, positionActionsColumn: 'last', paginationDisplayMode: 'pages',
-        initialState: { density: 'comfortable', showGlobalFilter: false, pagination: { pageIndex: 0, pageSize: 10 }, columnOrder: mobile ? ['note','amount','dateTime','type','mode','refundOf','settlement','account','mrt-row-actions'] : ['dateTime','note','amount','type','mode','refundOf','settlement','account','mrt-row-actions'], columnVisibility: { dateTime: true, mode:false, refundOf:false, settlement:false, account:false }, columnPinning: { right: ['mrt-row-actions'] } },
+        initialState: { density: 'comfortable', showGlobalFilter: false, pagination: { pageIndex: 0, pageSize: 10 }, columnOrder: mobile ? ['note','amount','dateTime','type','details','mode','refundOf','settlement','account','mrt-row-actions'] : ['dateTime','note','amount','type','details','mode','refundOf','settlement','account','mrt-row-actions'], columnVisibility: { dateTime: true, details:false, mode:false, refundOf:false, settlement:false, account:false }, columnPinning: { right: ['mrt-row-actions'] } },
         displayColumnDefOptions: { 'mrt-row-actions': { size: 44, minSize: 44, maxSize: 44, grow: false, header: '', muiTableHeadCellProps: { sx: { width: 44, minWidth: 44, maxWidth: 44, px: 0.5 } }, muiTableBodyCellProps: { align: 'center', sx: { width: 44, minWidth: 44, maxWidth: 44, px: 0.5, textAlign: 'center', verticalAlign: 'middle' } }, Cell: ({ row, table }) => <IconButton size="small" aria-label={t('gridDelete')} disabled={busy} onClick={() => { if (table.getState().creatingRow?.id === row.id) { table.setCreatingRow(null);persist(null); reset(); } else void remove({ ...row.original }); }} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}><DeleteIcon fontSize="small"/></IconButton> }, 'mrt-row-select': { size: 44 } },
         muiTablePaperProps: { elevation: 0, sx: { border: 0, borderRadius: 0, backgroundImage: 'none' } },
         muiTableContainerProps: { sx: { maxHeight: '65vh' } },
@@ -131,11 +134,11 @@ function LedgerTable({ entries, day, t, onSave, shop, sessionId, savedHistory = 
         muiEditTextFieldProps: ({ cell, row, table }) => ({
             variant: 'standard', fullWidth: true, disabled: busy, autoFocus: !table.getState().creatingRow && !table.getState().editingRow, InputProps: { disableUnderline: true },
             onKeyDown: event => { if (event.key === 'Enter' && !event.nativeEvent.isComposing && table.getState().creatingRow) commitCreation(row, cell.column.id, event.target.value); if (event.key === 'Escape' && !pending.current) { cancelledCell.current = cell.id; if (table.getState().creatingRow) {table.setCreatingRow(null);persist(null);} else table.setEditingCell(null); } },
-            onChange: event => { if(table.getState().creatingRow) persist({section,requestId:request.current,row:{...row.original,...row._valuesCache,[cell.column.id]:event.target.value}}); if (['type','mode','settlement','refundOf'].includes(cell.column.id) && !table.getState().creatingRow && !table.getState().editingRow) { void commitCell({ ...row.original }, cell.column.id, event.target.value); table.setEditingCell(null); } },
+            onChange: event => { if(table.getState().creatingRow) persist({section,requestId:request.current,row:{...row.original,...row._valuesCache,[cell.column.id]:event.target.value}}); if (['type','details','mode','settlement','refundOf'].includes(cell.column.id) && !table.getState().creatingRow && !table.getState().editingRow) { void commitCell({ ...row.original }, cell.column.id, event.target.value); table.setEditingCell(null); } },
             onBlur: event => {
                 if (cancelledCell.current === cell.id) { cancelledCell.current = null; return; }
                 if (table.getState().creatingRow && !event.currentTarget.closest('tr')?.contains(event.relatedTarget)) commitCreation(row, cell.column.id, event.target.value);
-                if (!table.getState().creatingRow && !table.getState().editingRow && !['type','mode','settlement','refundOf'].includes(cell.column.id)) void commitCell({ ...row.original }, cell.column.id, event.target.value);
+                if (!table.getState().creatingRow && !table.getState().editingRow && !['type','details','mode','settlement','refundOf'].includes(cell.column.id)) void commitCell({ ...row.original }, cell.column.id, event.target.value);
             },
         }),
         muiCreateRowModalProps: { fullWidth: true, maxWidth: 'sm', disableEscapeKeyDown: busy, onClose: () => { if (!pending.current) { table.setCreatingRow(null); reset(); } } },
@@ -143,7 +146,7 @@ function LedgerTable({ entries, day, t, onSave, shop, sessionId, savedHistory = 
         onCreatingRowCancel: reset, onEditingRowCancel: reset,
         onCreatingRowSave: args => save(args, true), onEditingRowSave: args => save(args, false),
         renderCreateRowDialogContent: args => dialogContent(args, true), renderEditRowDialogContent: args => dialogContent(args, false),
-        renderRowActions: ({ row }) => <Tooltip title={t('gridDelete')}><span><IconButton size="small" aria-label={t('gridDelete')} disabled={busy} onClick={event => { event.stopPropagation(); void remove({ ...row.original }); }} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main', backgroundColor: 'action.hover' } }}><DeleteIcon fontSize="small"/></IconButton></span></Tooltip>,
+        renderRowActions: ({ row }) => <><Button size="small" disabled={busy||row.original.kind==='purchase'} onClick={()=>setAccounting({...row.original})}>{t('accountingReview')}</Button><Tooltip title={t('gridDelete')}><span><IconButton size="small" aria-label={t('gridDelete')} disabled={busy} onClick={event => { event.stopPropagation(); void remove({ ...row.original }); }} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main', backgroundColor: 'action.hover' } }}><DeleteIcon fontSize="small"/></IconButton></span></Tooltip></>,
         renderTopToolbar: ({ table }) => !includeDrafts && <Box sx={{ pb: 2 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
                 <Tabs value={section} aria-label={t('gridSwitch')} onChange={(_, value) => { if (pending.current) return; setSection(value); table.resetColumnFilters(); table.resetGlobalFilter(); table.setPageIndex(0); reset(); }} sx={{ minHeight: 40 }}>
@@ -159,23 +162,25 @@ function LedgerTable({ entries, day, t, onSave, shop, sessionId, savedHistory = 
         </Box>,
         state: { isSaving: busy },
     });
-    useEffect(()=>{table.setColumnOrder(mobile ? ['note','amount','dateTime','type','mode','refundOf','settlement','account','mrt-row-actions'] : ['dateTime','note','amount','type','mode','refundOf','settlement','account','mrt-row-actions']);},[mobile]);
+    useEffect(()=>{table.setColumnOrder(mobile ? ['note','amount','dateTime','type','details','mode','refundOf','settlement','account','mrt-row-actions'] : ['dateTime','note','amount','type','details','mode','refundOf','settlement','account','mrt-row-actions']);},[mobile]);
     const search = table.getState().globalFilter || '';
     useEffect(()=>{if(!shop||!sessionId||includeDrafts)return;let disposed=false;const publish=()=>{void api({op:'view-context',shop,sessionId,day,section,search}).catch(error=>{if(!disposed)setError(error.message);});};const timer=setTimeout(publish,350),keep=setInterval(publish,60000);return()=>{disposed=true;clearTimeout(timer);clearInterval(keep);};},[shop,sessionId,day,section,search,includeDrafts]);
     useEffect(() => { if (includeDrafts && data[0]) table.setEditingRow(table.getRow(data[0].id)); }, []);
     return <section className={`${css.grid} zlm-ledger-ui`} aria-label={t('gridTitle')} onKeyDown={event => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z' && !['INPUT', 'TEXTAREA'].includes(event.target.tagName)) { event.preventDefault(); void undo(); } }}>
         {localDraft && !failed && !table.getState().creatingRow && <Button size="small" onClick={()=>{setSection(localDraft.section||section);if(localDraft.requestId)request.current=localDraft.requestId;table.setCreatingRow(createRow(table,localDraft.row));}}>{t('resumeDraft')}</Button>}
         {(error || failed) && <Alert severity="error" sx={{ mb: 2 }} action={failed && <><Button size="small" disabled={busy} onClick={() => void commitCell(failed.row, failed.field, failed.value, failed.requestId)}>{t('gridRetry')}</Button><Button size="small" onClick={() => { setFailed(null); setError('');persist(null); }}>{t('cancel')}</Button></>}>{error || t('unsavedEdit')}{failed && ` (${t(failed.field === 'note' ? 'item' : failed.field === 'type' ? 'gridType' : failed.field)}: ${failed.value})`}</Alert>}
+        {accounting&&<AccountingEditor key={accounting.id} row={accounting} t={t} onSave={onSave} onClose={()=>setAccounting(null)}/>}
         {manager&&<LedgerManager kind={manager} shop={shop} day={day} t={t} onClose={()=>setManager(null)} onSave={onSave}/>}
         <MaterialReactTable table={table}/>
         <Menu anchorEl={exportAnchor} open={!!exportAnchor} onClose={() => setExportAnchor(null)}>
             <MenuItem disabled={busy || !data.length || !!table.getState().creatingRow || !!table.getState().editingCell || !!failed} onClick={() => download('xlsx')}>{t('gridExportExcel')}</MenuItem><MenuItem disabled={busy || !data.length || !!table.getState().creatingRow || !!table.getState().editingCell || !!failed} onClick={() => download('csv')}>{t('gridExportCSV')}</MenuItem>
             <Divider/>
+            <MenuItem disabled={busy} onClick={()=>{setAccounting({id:'new',day,kind:'actual',category:'rent',type:'actual:rent',mode:'transaction',amount:'',costCoverage:'partial',costTiming:'period'});setExportAnchor(null);}}>{t('addPeriodCost')}</MenuItem>
             {['manageHistory','managePeriod','manageClose','manageBackup'].map(kind=><MenuItem key={kind} disabled={busy} onClick={()=>{setManager(kind);setExportAnchor(null);}} >{t(kind)}</MenuItem>)}
             <MenuItem onClick={() => { table.setShowColumnFilters(value => !value); setExportAnchor(null); }}>{t('gridFilters')}</MenuItem>
             <MenuItem onClick={() => { table.setDensity(table.getState().density === 'compact' ? 'comfortable' : 'compact'); setExportAnchor(null); }}>{t('gridDensity')}</MenuItem>
             <MenuItem onClick={() => { table.setIsFullScreen(value => !value); setExportAnchor(null); }}>{t('gridFullscreen')}</MenuItem>
-            <MenuItem onClick={()=>{for(const id of ['mode','refundOf','settlement','account'])table.getColumn(id).toggleVisibility();setExportAnchor(null);}}>{t('extraFields')}</MenuItem>
+            <MenuItem onClick={()=>{for(const id of ['details','mode','refundOf','settlement','account'])table.getColumn(id).toggleVisibility();setExportAnchor(null);}}>{t('extraFields')}</MenuItem>
             <MenuItem onClick={() => { table.getColumn('dateTime').toggleVisibility(); setExportAnchor(null); }}>{t(table.getColumn('dateTime').getIsVisible() ? 'gridHideDate' : 'gridShowDate')}</MenuItem>
         </Menu>
     </section>;

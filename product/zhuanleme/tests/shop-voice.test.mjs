@@ -29,9 +29,19 @@ test('voice bridge checks configuration, calls the plugin pipeline and removes a
         const bridge=createVoiceBridge(tools,dir),signal=new AbortController().signal;
         const input={op:'voice-transcribe',audio:Buffer.from('test-audio').toString('base64'),mime:'audio/webm;codecs=opus'};
         assert.equal((await bridge.handle({op:'voice-status'},signal)).ready,false);
-        await assert.rejects(bridge.handle(input,signal),/尚未配置/);assert.equal(transcribed,0);
+        await assert.rejects(bridge.handle(input,signal),/本地语音识别服务未就绪/);assert.equal(transcribed,0);
         ready=true;assert.deepEqual(await bridge.handle(input,signal),{text:'咖啡豆 860 元'});assert.deepEqual(await readdir(dir),[]);
         fail=true;await assert.rejects(bridge.handle(input,signal),/调用失败/);assert.deepEqual(await readdir(dir),[]);
         await assert.rejects(bridge.handle({...input,mime:'text/plain'},signal),/格式/);
     }finally{await rm(dir,{recursive:true,force:true});}
+});
+test('voice stream reports local service readiness before opening a recording',async()=>{
+    let streamed=false;
+    const tools={get:()=>({}),async execute(call){
+        if(call.name==='voice_health')return {isError:false,value:{checks:[{name:'ASR 引擎',ok:false,detail:'SenseVoice 本地中文识别'},{name:'ASR 接口地址',ok:false},{name:'ASR 密钥',ok:true}]}};
+        streamed=true;return {isError:true,error:{message:'fetch failed'}};
+    }};
+    const bridge=createVoiceBridge(tools,tmpdir());
+    await assert.rejects(bridge.handle({op:'voice-stream',action:'start',sampleRate:16000}),/本地语音识别服务未就绪/);
+    assert.equal(streamed,false);
 });

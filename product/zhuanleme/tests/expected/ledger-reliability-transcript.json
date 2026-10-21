@@ -1,0 +1,60 @@
+[
+  {
+    "tool": "zhuanleme_report",
+    "summary": {
+      "day": "2026-10-14",
+      "revenue": -10000,
+      "cost": -1000,
+      "profit": -9000,
+      "purchases": 500,
+      "revenueComplete": true,
+      "platform": -1000
+    }
+  },
+  {
+    "tool": "zhuanleme_period",
+    "summary": {
+      "day": "2026-10-14",
+      "revenue": -10000,
+      "cost": -1000,
+      "profit": -9000,
+      "purchases": 500,
+      "revenueComplete": true,
+      "platform": -1000
+    },
+    "total": 2,
+    "offset": 0,
+    "hasMore": true,
+    "entries": [
+      {
+        "day": "2026-10-14",
+        "kind": "purchase",
+        "amount": 500,
+        "refund": false
+      }
+    ]
+  },
+  {
+    "tool": "zhuanleme_period",
+    "summary": {
+      "day": "2026-10-14",
+      "revenue": -10000,
+      "cost": -1000,
+      "profit": -9000,
+      "purchases": 500,
+      "revenueComplete": true,
+      "platform": -1000
+    },
+    "total": 2,
+    "offset": 1,
+    "hasMore": false,
+    "entries": [
+      {
+        "day": "2026-10-14",
+        "kind": "revenue",
+        "amount": 10000,
+        "refund": true
+      }
+    ]
+  }
+]

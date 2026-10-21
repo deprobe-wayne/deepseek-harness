@@ -1,0 +1,17 @@
+{
+  "generator": "Built-in image_gen",
+  "date": "2026-10-19",
+  "usage": "AI-generated decorative home navigation photography, not business data. Created for this product, without third-party reference images or logos.",
+  "assets": [
+    {
+      "file": "analysis-v2.jpg",
+      "source": "exec-61fa378a-fdcc-4212-8ae5-11af54531114.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: portrait photo for the \"Analyze\" action of an elegant Chinese shop bookkeeping application, crop ratio 4:5.\nCreate a photorealistic luxury editorial still life: a single refined black metal magnifying glass lying diagonally over an ivory printed financial chart on a charcoal stone tabletop. Through the large clear circular lens one small segment of a thin black plotted line and columns is visibly magnified; a clear physical metaphor of examining and understanding business data. Only one sheet, only one magnifier, no other props. Warm grazing sunlight from upper left, deep tactile shadows, subtle ivory paper fibers, matte blackened metal, restrained warm gray and charcoal palette. The object composition occupies the upper 75%; the lowest 25% is uninterrupted dark charcoal table suitable for white UI label later. Close architectural product photography, sophisticated and quiet, sculptural geometry, entirely realistic not a 3D illustration, no cheesy office stock-photo styling. Charts have subtle lines and bars but NO letters, numbers, headings, logos or readable text. No coins, currency signs, colored chart, hands, computers, frames, borders, watermarks or UI. Match the aesthetic of warm ivory folded paper / open book pages photographed against dark stone with dramatic sunlight."
+    },
+    {
+      "file": "overview-v2.jpg",
+      "source": "exec-e47a4253-d10e-4269-93f0-56c2250d7485.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: portrait photo for the \"Overview\" action of an elegant Chinese shop bookkeeping application, crop ratio 4:5.\nCreate a photorealistic luxury editorial still life, a carefully composed overhead view of a single complete ivory business summary sheet on dark charcoal stone. A large minimalist charcoal donut chart in its upper half, three small neutral bars and a thin trend line neatly arranged beneath, all on the SAME single sheet, a clear at-a-glance whole-business report rather than analysis equipment. Photographed from above with paper slightly angled, main large circular chart and entire report visible, upper paper edge catches warm grazing sunlight from upper left, realistically tactile cotton paper, sculptural long shadows. Restrained ivory, warm stone gray and graphite palette, exceptionally simple composition, no clutter, high-end stationery campaign photography, no computer rendering or flat infographic aesthetic. Sheet occupies upper 75%; bottom 25% is uninterrupted deep charcoal stone for a white UI label later. NO letters, numbers, headings, captions, legends, logos or readable text. No coins, currency signs, buildings, steps, hands, computers, magnifying glass, frames, borders, watermarks or UI. Match warm ivory folded paper and open book pages shot on dark stone in strong natural light."
+    }
+  ]
+}

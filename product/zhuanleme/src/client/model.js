@@ -46,12 +46,17 @@ export function createModel() {
 
 /** Plugin-owned navigation shared through Slot observable injection. */
 export function createNavigation() {
-    let snapshot = { shopId: null, view: 'home' };
+    let snapshot = { shopId: null, view: 'home', entryTarget: null }, revision = 0;
     const listeners = new Set();
     return {
         getSnapshot: () => snapshot,
         subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-        select(shopId, view) { snapshot = { shopId, view }; for (const fn of listeners) fn(); },
+        select(shopId, view) { snapshot = { shopId, view, entryTarget: snapshot.shopId === shopId ? snapshot.entryTarget : null }; for (const fn of listeners) fn(); },
+        revealEntries(shopId, entries) {
+            if (snapshot.shopId !== shopId || !entries.length) return;
+            snapshot = { ...snapshot, entryTarget: { day: entries[0].day, section: entries[0].kind === 'revenue' ? 'income' : 'expenses', revision: ++revision } };
+            for (const fn of listeners) fn();
+        },
         dispose() { listeners.clear(); }
     };
 }

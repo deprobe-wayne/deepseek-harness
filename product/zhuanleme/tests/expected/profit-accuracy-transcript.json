@@ -1,0 +1,121 @@
+[
+  {
+    "revenue": 100000,
+    "cost": null,
+    "profit": null,
+    "profitStatus": "incomplete",
+    "partialCosts": [
+      "materials"
+    ],
+    "costs": [
+      {
+        "category": "materials",
+        "amount": null,
+        "basis": "incomplete"
+      },
+      {
+        "category": "labor",
+        "amount": 0,
+        "basis": "daily"
+      },
+      {
+        "category": "rent",
+        "amount": 20001,
+        "basis": "actual"
+      },
+      {
+        "category": "utilities",
+        "amount": 0,
+        "basis": "daily"
+      },
+      {
+        "category": "platform",
+        "amount": 6000,
+        "basis": "actual"
+      },
+      {
+        "category": "other",
+        "amount": 0,
+        "basis": "daily"
+      }
+    ]
+  },
+  {
+    "revenue": 100000,
+    "cost": 57501,
+    "profit": 42499,
+    "profitStatus": "verified",
+    "partialCosts": [],
+    "costs": [
+      {
+        "category": "materials",
+        "amount": 31500,
+        "basis": "actual"
+      },
+      {
+        "category": "labor",
+        "amount": 0,
+        "basis": "daily"
+      },
+      {
+        "category": "rent",
+        "amount": 20001,
+        "basis": "actual"
+      },
+      {
+        "category": "utilities",
+        "amount": 0,
+        "basis": "daily"
+      },
+      {
+        "category": "platform",
+        "amount": 6000,
+        "basis": "actual"
+      },
+      {
+        "category": "other",
+        "amount": 0,
+        "basis": "daily"
+      }
+    ]
+  },
+  {
+    "revenue": 100000,
+    "cost": 57501,
+    "profit": 42499,
+    "profitStatus": "verified",
+    "partialCosts": [],
+    "costs": [
+      {
+        "category": "materials",
+        "amount": 31500,
+        "basis": "actual"
+      },
+      {
+        "category": "labor",
+        "amount": 0,
+        "basis": "daily"
+      },
+      {
+        "category": "rent",
+        "amount": 20001,
+        "basis": "actual"
+      },
+      {
+        "category": "utilities",
+        "amount": 0,
+        "basis": "daily"
+      },
+      {
+        "category": "platform",
+        "amount": 6000,
+        "basis": "actual"
+      },
+      {
+        "category": "other",
+        "amount": 0,
+        "basis": "daily"
+      }
+    ]
+  }
+]

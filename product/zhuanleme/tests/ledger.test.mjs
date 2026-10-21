@@ -25,7 +25,7 @@ test('persistent ledger isolates shops, drafts, purchases, and versions', () => 
         assert.equal(l.report('a', day).summary.profit, 574000);
         l.add('a', { day, kind: 'purchase', amount: '9000', request: 'p' });
         assert.equal(l.report('a', day).summary.profit, 574000);
-        const draft = l.add('a', { day, kind: 'actual', category: 'materials', amount: '2000', request: 'ai', source: 'ai' }, 'draft');
+        const draft = l.add('a', { day, kind: 'actual', category: 'materials', costCoverage:'complete',amount: '2000', request: 'ai', source: 'ai' }, 'draft');
         assert.equal(l.report('a', day).summary.profit, 574000);
         assert.throws(() => l.change('b', { id: draft, version: 1, action: 'confirm' }));
         l.change('a', { id: draft, version: 1, action: 'confirm' });
@@ -134,7 +134,7 @@ test('pending proposals survive restart, conflicts roll back, and unknown newer 
         assert.equal(l.rows('a').find(r => r.id === second).channel, 'meituan');
         assert.equal(l.proposals('a')[0].status, 'pending');
         assert.equal(l.rows('a').find(r => r.id === first).version, 1);
-        l.db.exec('PRAGMA user_version=3');
+        l.db.exec('PRAGMA user_version=4');
         assert.throws(() => new Ledger(path), /升级插件/);
     } finally { l.close(); rmSync(dir, {recursive:true,force:true}); }
 });
@@ -220,4 +220,26 @@ test('undo cannot overwrite concurrent model edits, cross shops or duplicate pos
         assert.equal(l.rows('a').find(row => row.id === id).status, 'void');
         assert.equal(l.rows('a').find(row => row.id === id).version, 3);
     } finally { l.close(); }
+});
+
+test('receipt confirmation is atomic across versions, shop membership, and repeated clicks', () => {
+    const l=new Ledger(':memory:');
+    try {
+        const ids=['20','60','18'].map((amount,i)=>l.add('a',{day,kind:'purchase',amount,note:i===1?'虾':'白菜',request:'receipt-'+i},'draft'));
+        const items=ids.map(id=>({id,version:1}));
+        l.change('a',{id:ids[1],version:1,action:'edit',amount:'61'});
+        assert.throws(()=>l.resolveEntries('a',{items,action:'confirm'}),/已更新/);
+        assert(l.reviewEntries('a',ids).every(row=>row.status==='draft'));
+        assert.equal(l.row('a',ids[0]).version,1,'Earlier successful changes roll back on later conflict');
+        assert.throws(()=>l.resolveEntries('b',{items,action:'confirm'}),/不属于/);
+        assert.throws(()=>l.reviewEntries('a',[ids[0],ids[0]]),/不重复/);
+        items[1].version=2;
+        l.resolveEntries('a',{items,action:'confirm'});
+        const audit=l.db.prepare('SELECT COUNT(*) n FROM audit').get().n;
+        l.resolveEntries('a',{items,action:'confirm'});
+        assert.equal(l.db.prepare('SELECT COUNT(*) n FROM audit').get().n,audit);
+        assert(l.reviewEntries('a',ids).every(row=>row.status==='posted'));
+        assert.equal(l.report('a',day).entries.filter(row=>row.status==='posted').length,3);
+        assert.equal(l.report('a','2026-10-07').entries.filter(row=>row.status==='posted').length,0);
+    } finally {l.close();}
 });

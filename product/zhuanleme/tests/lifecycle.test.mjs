@@ -10,21 +10,29 @@ import * as plugin from '../src/host.mjs';
 test('Cordis unload removes plugin tools and routes; reloading reopens the durable ledger', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'zlm-life-')), ctx = new Context();
     const routes = new Map();
+    let titleProvider;
     try {
         await ctx.plugin(SystemPrompt); await ctx.plugin(ToolRuntime);
+        ctx.provide('llm', { resolveModelInfo: async () => ({ inputModalities: ['text', 'image'] }) });
         ctx.provide('profileContext', { dir });
-        ctx.provide('agents', { get: () => undefined });
-        ctx.provide('workspaceRegistry', { resolveByPath: async () => ({ id:'shop' }), get: () => ({ id:'shop' }) });
+        ctx.provide('agents', { get: () => undefined, list: () => [] });
+        ctx.provide('sessionTitle', { get: () => null, register(provider) { titleProvider = provider; return () => { titleProvider = undefined; }; } });
+        ctx.provide('workspaceRegistry', { resolveByPath: async () => ({ id:'shop', sessionIds:['image-session'] }), get: () => ({ id:'shop' }) });
         // Only transport registration is stubbed; Cordis owns each actual registration effect.
         ctx.provide('webServer', { register(route) { routes.set(route.path, route); return () => routes.delete(route.path); } });
         ctx.provide('connection', { fetch: { register(route) { return ctx.effect(() => { routes.set(route.path,route); return () => routes.delete(route.path); }); } } });
         const fiber = ctx.plugin(plugin); await fiber;
         assert.equal(ctx.tools.schemas().filter(t => t.name.startsWith('zhuanleme_')).length, 5);
+        assert.equal(titleProvider.id, 'zhuanleme-first-prompt');
+        const imageInput = { agent: { id:'image-session', session: { header: { cwd:'/shop' } } } };
+        assert.equal(await ctx.waterfall('session/image-input', imageInput, async () => false), true);
         const exec = { signal: new AbortController().signal, callId:'call', agent:{ session:{ header:{cwd:'/shop'} } } };
         const result = await ctx.tools.execute({ ...exec, name:'zhuanleme_draft', arguments:{day:'2026-09-22',kind:'purchase',amount:'860',request:'life'} });
         assert.equal(result.isError, false);
         await fiber.dispose();
         assert.equal(ctx.tools.schemas().filter(t => t.name.startsWith('zhuanleme_')).length, 0);
+        assert.equal(titleProvider, undefined);
+        assert.equal(await ctx.waterfall('session/image-input', imageInput, async () => false), false);
         // Connection's own service effect emulates transport ownership separately.
         assert.equal(routes.has('/zhuanleme/logo.png'), false);
         const reloaded = ctx.plugin(plugin); await reloaded;

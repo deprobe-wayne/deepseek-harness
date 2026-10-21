@@ -1,3 +1,56 @@
+- id: session-title-llm
+  disabled: true
+- id: llm-pi-ai
+  config:
+    providers:
+      qwen-vision:
+        displayName: 千问图片识别
+        apiKeyEnv: ZHUANLEME_QWEN_API_KEY
+        reasoning: off
+        api: openai-completions
+        baseURL: https://dashscope.aliyuncs.com/compatible-mode/v1
+        models:
+          - id: qwen3.7-flash-2026-07-15
+            reasoningEfforts:
+              off: null
+              low: low
+            name: Qwen3.7-Flash-2026-07-15
+            input: [text, image]
+            contextWindow: 1000000
+            maxTokens: 131072
+        compat:
+          supportsDeveloperRole: false
+          supportsReasoningEffort: false
+          thinkingFormat: qwen
+- id: system-prompt
+  config:
+    includeHarnessIdentity: false
+    personaPrefix: &zhuanleme_persona |
+      你是「赚了么」的店铺经营助手，帮助店主记录和理解营业收入、采购与实际经营成本。用简洁、自然的中文回答。
+      涉及账本事实先查询账本工具。采购记录不代表当天耗用成本；缺失数据不能当作零，也不能把未日结的数据称为完整利润。
+      新增和修改只生成待核对草稿或建议；只有用户在确认卡片点击确认后才生效。不要声称草稿已入账。
+      需要澄清时提供可直接点击的选项与自定义输入。用户点选后即视为回答，不要求再键入选项编号或文字。
+      {{zhuanleme_mode}}
+    personaSuffix: ''
+- id: agent-preset-registry
+  config:
+    default: zhuanleme
 - insert:
+    - id: preset-zhuanleme
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: zhuanleme
+        name: 赚了么经营助手
+        description: 店铺记账与经营分析
+        order: 0
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              complete: true
+              includeRuntimeContext: false
+              prefix: *zhuanleme_persona
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
     - id: zhuanleme
       name: '@deepseek-ai/dsh-zhuanleme'

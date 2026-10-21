@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-rc.2/zhuanleme-profit-recognition/guide.md
+/:
+  en: f7c78e77095b2786
+  zh: 928df22520013ec7
+/zhuanleme-cost-recognition-and-settlement-basis:
+  en: ccaca440c3dc98ff
+  zh: 4622192a3baa0983
+/zhuanleme-cost-recognition-and-settlement-basis/change:
+  en: 0c05eb91db13927f
+  zh: c47549949b448f0c
+/zhuanleme-cost-recognition-and-settlement-basis/migration:
+  en: a468c8d5bac7c224
+  zh: 937cb1e3c36c051e

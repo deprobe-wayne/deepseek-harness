@@ -47,6 +47,17 @@ export function turnReviewReferences(snapshot, turn, shopId) {
     return [...refs.values()];
 }
 
+/** Combine the current turn's new entries into one review; change and rule proposals keep their own decisions.
+ * @param references - Persisted review identities from one turn.
+ * @returns Review groups in their original position.
+ */
+export function groupTurnReviews(references) {
+    const entries = references.filter(ref => ref.type === 'entry');
+    if (entries.length < 2) return references;
+    const group = { shop: entries[0].shop, type: 'entries', ids: entries.map(ref => ref.id) };
+    return references.flatMap(ref => ref.type !== 'entry' ? [ref] : ref === entries[0] ? [group] : []);
+}
+
 const validEntry = value => record(value) && /^\d{4}-\d{2}-\d{2}$/.test(value.day) && ['revenue', 'purchase', 'actual'].includes(value.kind) && Number.isSafeInteger(value.amount) && value.amount >= 0 && typeof value.note === 'string';
 const validRule = value => record(value) && ['materials','labor','rent','utilities','platform','other'].includes(value.category) && ['daily','monthly','percent'].includes(value.method) && Number.isSafeInteger(value.value) && value.value >= 0 && /^\d{4}-\d{2}-\d{2}$/.test(value.effective);
 
@@ -57,7 +68,9 @@ const validRule = value => record(value) && ['materials','labor','rent','utiliti
  * @returns Whether the displayed fields and record identity can be used for review.
  */
 export function validReview(value, ref) {
-    if (!record(value) || value.shop?.id !== ref.shop || typeof value.shop.title !== 'string' || value.type !== ref.type || !record(value.item) || value.item.id !== ref.id) return false;
+    if (!record(value) || value.shop?.id !== ref.shop || typeof value.shop.title !== 'string' || value.type !== ref.type) return false;
+    if (ref.type === 'entries') return Array.isArray(value.items) && value.items.length === ref.ids.length && value.items.every((item, i) => validReview({ ...value, type: 'entry', item }, { shop: ref.shop, type: 'entry', id: ref.ids[i] }));
+    if (!record(value.item) || value.item.id !== ref.id) return false;
     const item = value.item;
     if (ref.type === 'entry') return validEntry(item) && ['draft','posted','void'].includes(item.status) && Number.isSafeInteger(item.version) && item.version > 0;
     if (!['pending','applied','rejected'].includes(item.status)) return false;
@@ -82,7 +95,7 @@ export function createReviewModel(ref, { request = api, changed = () => {}, inva
         controller = new AbortController();
         publish({ loading: true });
         try {
-            const data = await request({ op: 'review', ...ref }, controller.signal);
+            const data = await request({ op: ref.type === 'entries' ? 'review-entries' : 'review', ...ref }, controller.signal);
             if (!validReview(data, ref)) throw new Error(invalidMessage);
             if (version === generation) publish({ data, loading: false });
         } catch (error) {
@@ -96,14 +109,17 @@ export function createReviewModel(ref, { request = api, changed = () => {}, inva
         async resolve(action) {
             if (disposed || state.busy || state.loading || !state.data) return;
             const item = state.data.item;
-            if (ref.type === 'entry' ? item.status !== 'draft' : item.status !== 'pending') return;
+            const pending = ref.type === 'entries' ? state.data.items.filter(row => row.status === 'draft') : [];
+            if (ref.type === 'entries' ? !pending.length : ref.type === 'entry' ? item.status !== 'draft' : item.status !== 'pending') return;
             if (!['confirm','reject'].includes(action)) return;
             publish({ busy: true, error: null });
             try {
-                await request(ref.type === 'entry'
+                await request(ref.type === 'entries'
+                    ? { op: 'resolve-entries', shop: ref.shop, items: pending.map(({ id, version }) => ({ id, version })), action }
+                    : ref.type === 'entry'
                     ? { op: 'change', shop: ref.shop, id: ref.id, version: item.version, action: action === 'confirm' ? 'confirm' : 'void' }
                     : { op: 'proposal', shop: ref.shop, id: ref.id, action });
-                changed(ref.shop);
+                changed(ref.shop, action === 'confirm' ? ref.type === 'entries' ? pending : ref.type === 'entry' ? [item] : [] : []);
             } catch (error) { publish({ error: error.message }); }
             finally { await load(); publish({ busy: false }); }
         },

@@ -23,6 +23,14 @@ declare module '@deepseek-ai/dsh-llm' {
 }
 
 describe('Session', () => {
+  it('persists explicit informational markers without changing derived history', () => {
+    const session = Session.create(SessionId('external-marker'))
+    const event = session.append('plugin/receipt-info' as SessionEventType, { receipt: 'one' } as never, { ignorable: true })
+    expect(event.ignorable).toBe(true)
+    expect(session.snapshotEvents()[0]?.ignorable).toBe(true)
+    expect(Session.create(SessionId('external-marker-restored'), session.snapshotEvents()).deriveMessages()).toEqual([])
+    expect(session.append('turn/start', { turn: 1 }).ignorable).toBeUndefined()
+  })
   it('exposes one stable readonly surface view', () => {
     const session = Session.create(SessionId('surface-view'))
     const surface = session.surface

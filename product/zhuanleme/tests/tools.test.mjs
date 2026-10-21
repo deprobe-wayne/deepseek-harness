@@ -28,7 +28,7 @@ test('real DSH tool runtime validates input, cancellation and structured canonic
         assert.equal(ledger.rows('another-shop').length, 0);
         assert.deepEqual(first.meta, { review: first.value.review });
         assert.deepEqual(JSON.parse(first.content[0].text), first.value);
-        assert.match(first.value.message, /对话中的确认卡片/);
+        assert.equal(first.value.message, '请核对后确认入账。无需重复确认卡片内容。');
         ledger.change('a', { id: first.value.id, version: 1, action: 'confirm' });
         const retry = await execute('zhuanleme_draft', args);
         assert.equal(retry.value.status, 'posted');
@@ -63,6 +63,7 @@ test('real DSH tool runtime validates input, cancellation and structured canonic
 test('PTC child dispatches preserve confirmation lookup data in their replayable result content', async () => {
     const ctx = new Context(), ledger = new Ledger(':memory:'), events = [];
     try {
+        ctx.provide('workingDirectory', { ensure: async agent => agent.session.header.cwd });
         await ctx.plugin(SystemPrompt);
         // Only program evaluation is scripted; the real ToolRuntime owns nested dispatch and event logging.
         ctx.provide('ptcRuntime', {
@@ -76,12 +77,12 @@ test('PTC child dispatches preserve confirmation lookup data in their replayable
                 return { logs: [], value: [draft, change, rules] };
             },
         });
-        await ctx.plugin(ToolRuntime, { mode: 'both' });
+        await ctx.plugin(ToolRuntime, { mode: 'ptc' });
         ctx.provide('workspaceRegistry', { resolveByPath: async () => ({ id: 'a' }) });
         await ctx.plugin({ name: 'ledger-ptc-test', inject: ['tools', 'workspaceRegistry'], apply(c) { registerTools(c, ledger, (id, day) => ({ ...ledger.report(id, day), demo: false })); } });
         const result = await ctx.tools.execute({ name: 'run_code', arguments: { code: 'scripted ledger calls', description: 'Generate business confirmations' }, callId: 'ptc-parent', signal: new AbortController().signal,
-            agent: { session: { header: { cwd: '/shop' }, append: (type, data) => { events.push({ type, data }); } } } });
-        assert.equal(result.isError, false);
+            agent: { ctx, session: { header: { cwd: '/shop' }, append: (type, data) => { events.push({ type, data }); } } } });
+        assert.equal(result.isError, false, JSON.stringify(result));
         const dispatches = events.filter(event => event.type === 'tool/ptc-dispatch');
         assert.equal(dispatches.length, 3);
         for (const [index, event] of dispatches.entries()) {

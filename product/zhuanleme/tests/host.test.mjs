@@ -3,13 +3,15 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { apply } from '../src/host.mjs';
 test('host binds AI drafts to the calling session and disposes routes and tools', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'zlm-host-')), effects = [], routes = new Map(), tools = new Map();
     const archived = new Set();
     let fetchHandler;
-    const ctx = { profileContext: { dir }, effect: fn => { const dispose = fn(); if (dispose)
-            effects.push(dispose); }, agents: { get: id => id === 'running' ? { status: 'running' } : undefined }, connection: { fetch: { register: r => { fetchHandler = r.fetch; effects.push(() => { fetchHandler = undefined; }); } } }, webServer: { register: r => { routes.set(r.path, r); return () => routes.delete(r.path); } }, workspaceRegistry: { get: id => ['a', 'b'].includes(id) ? { id, title: `店铺 ${id}`, sessionIds: id === 'a' ? ['running', 'idle'] : [] } : undefined, resolveByPath: async (path) => path === '/shop-a' ? { id: 'a' } : undefined, archiveSession: async id => { archived.add(id); }, unarchiveSession: async id => { archived.delete(id); } }, tools: { register: t => { tools.set(t.name, t); effects.push(() => tools.delete(t.name)); } } };
+    const promptVariables = new Map();
+    const ctx = { on: () => {}, sessionTitle: { register: () => () => {}, get: () => null }, systemPrompt: { variable(name,provider) { promptVariables.set(name,provider); return () => promptVariables.delete(name); } }, profileContext: { dir }, effect: fn => { const dispose = fn(); if (dispose)
+            effects.push(dispose); }, agents: { list: () => [], get: id => id === 'running' ? { status: 'running' } : undefined }, connection: { fetch: { register: r => { fetchHandler = r.fetch; effects.push(() => { fetchHandler = undefined; }); } } }, webServer: { register: r => { routes.set(r.path, r); return () => routes.delete(r.path); } }, workspaceRegistry: { get: id => ['a', 'b'].includes(id) ? { id, title: `店铺 ${id}`, sessionIds: id === 'a' ? ['running', 'idle'] : [] } : undefined, resolveByPath: async (path) => path === '/shop-a' ? { id: 'a' } : undefined, archiveSession: async id => { archived.add(id); }, unarchiveSession: async id => { archived.delete(id); } }, tools: { register: t => { tools.set(t.name, t); effects.push(() => tools.delete(t.name)); } } };
     try {
         await apply(ctx);
         const post = input => fetchHandler(new Request('http://localhost/api/zhuanleme', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://localhost' }, body: JSON.stringify(input) }));
@@ -20,6 +22,17 @@ test('host binds AI drafts to the calling session and disposes routes and tools'
         assert.deepEqual(await (await post({ op: 'conversation-state' })).json(), { deletedSessionIds: ['idle'], pinnedSessionIds: [] });
         assert.equal((await post({ op: 'conversation-restore', shop: 'a', sessionId: 'idle' })).status, 200);
         assert.equal(archived.has('idle'), false);
+        assert.deepEqual(await (await post({op:'assistant-mode',shop:'a',sessionId:'idle'})).json(),{mode:'record'});
+        assert.equal((await post({op:'assistant-mode',shop:'b',sessionId:'idle',mode:'analysis'})).status,400);
+        assert.equal((await post({op:'assistant-mode',shop:'a',sessionId:'running',mode:'analysis'})).status,400);
+        assert.equal((await post({op:'assistant-mode',shop:'a',sessionId:'idle',mode:'unknown'})).status,400);
+        assert.equal((await post({op:'assistant-mode',shop:'a',sessionId:'idle',mode:'analysis'})).status,200);
+        assert.match(promptVariables.get('zhuanleme_mode')({agent:{id:'idle'}}),/当前为分析模式/);
+        const analysisExec={signal:new AbortController().signal,agent:{id:'idle',session:{header:{cwd:'/shop-a'}}}};
+        await assert.rejects(()=>tools.get('zhuanleme_draft').execute({day:'today',kind:'purchase',amount:'600',request:'analysis-draft'},analysisExec),/分析模式仅查询/);
+        assert.equal((await tools.get('zhuanleme_report').execute({},analysisExec)).entries.length,0);
+        assert.equal((await post({op:'assistant-mode',shop:'a',sessionId:'idle',mode:'record'})).status,200);
+        assert.match(promptVariables.get('zhuanleme_mode')({agent:{id:'idle'}}),/仅回复一句/);
         const exec = { signal: new AbortController().signal, agent: { id:'idle', session: { header: { cwd: '/shop-a' } } } };
         assert.equal((await post({op:'view-context',shop:'a',sessionId:'idle',day:'2026-08-01',section:'expenses',search:'咖啡'})).status,200);
         assert.equal((await post({op:'view-context',shop:'b',sessionId:'idle',day:'2026-08-02'})).status,400);
@@ -81,6 +94,16 @@ test('host binds AI drafts to the calling session and disposes routes and tools'
         assert.deepEqual((await (await post({op:'shop-state'})).json()).deleted,['b']);
         assert.equal((await post({op:'shop-restore',shop:'b'})).status,200);
         assert.equal((await post({op:'period',shop:'b',from:'2026-09-21',to:'2026-09-21'})).status,200);
+        const sale=await (await post({op:'add',shop:'a',day:'2026-10-13',kind:'revenue',channel:'store',mode:'transaction',amount:'100',request:'refund-sale'})).json();
+        await post({op:'add',shop:'a',day:'2026-10-14',kind:'revenue',channel:'store',mode:'transaction',amount:'10',refundOf:sale.id,request:'refund'});
+        const backup=await (await post({op:'backup',shop:'a'})).json();
+        const refund=backup.data.entries.find(r=>JSON.parse(r.data).refundOf);
+        refund.data=JSON.stringify({...JSON.parse(refund.data),amount:20000});
+        const {checksum,...payload}=backup;
+        backup.checksum=createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+        assert.equal((await post({op:'backup-preview',shop:'b',backup})).status,400);
+        assert.equal((await post({op:'restore',shop:'b',backup,checksum:backup.checksum})).status,400);
+        assert.equal((await (await post({op:'period',shop:'b',from:'2026-10-13',to:'2026-10-14'})).json()).total,0);
     }
     finally {
         for (const dispose of effects.reverse())
@@ -89,5 +112,6 @@ test('host binds AI drafts to the calling session and disposes routes and tools'
     }
     assert.equal(routes.size, 0);
     assert.equal(tools.size, 0);
+    assert.equal(promptVariables.size, 0);
     assert.equal(fetchHandler, undefined);
 });

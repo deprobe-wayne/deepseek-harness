@@ -1,20 +1,93 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Ledger } from '../src/ledger.mjs';
 import { createDemoManager } from '../src/demo.mjs';
-test('retail demo stays isolated and repeated activation preserves edits', async () => {
- const dir=await mkdtemp(join(tmpdir(),'zlm-demo-')), ledger=new Ledger(join(dir,'ledger.sqlite')), shops=new Map();
- const registry={get:id=>shops.get(id),create:async(path,title)=>{const w={id:'demo-shop',path,title};shops.set(w.id,w);return w;}};
- try {
-  const demo=await createDemoManager(dir,registry,ledger);
-  const [a,b]=await Promise.all([demo.ensure(),demo.ensure()]);assert.equal(a.workspace.id,b.workspace.id);
-  const report=ledger.report(a.workspace.id,a.day);assert.equal(report.summary.revenue,892000);assert.equal(report.trend.length,7);assert.ok(report.summary.profit>0);assert.equal(report.summary.purchases,282000);
-  assert.equal(ledger.rows('real-shop').length,0);assert.equal(demo.isDemo('real-shop'),false);
-  const row=report.entries.find(r=>r.kind==='purchase');ledger.change(a.workspace.id,{id:row.id,version:row.version,action:'void'});
-  const count=ledger.rows(a.workspace.id).length;const reopened=await createDemoManager(dir,registry,ledger);await reopened.ensure();
-  assert.equal(shops.size,1);assert.equal(ledger.rows(a.workspace.id).length,count);assert.equal(ledger.rows(a.workspace.id).find(r=>r.id===row.id).status,'void');assert.equal(reopened.isDemo(a.workspace.id),true);
- } finally {ledger.close();await rm(dir,{recursive:true,force:true});}
+const now = Date.parse('2026-10-19T08:00:00+08:00');
+async function fixture(t) {
+    t.mock.timers.enable({ apis: ['Date'], now });
+    const dir = await mkdtemp(join(tmpdir(), 'zlm-demo-')), ledger = new Ledger(join(dir, 'ledger.sqlite')), shops = new Map();
+    const registry = { get: id => shops.get(id), create: async (path, title) => { const w = { id: 'demo-shop', path, title }; shops.set(w.id, w); return w; } };
+    t.after(async () => { ledger.close(); await rm(dir, { recursive: true, force: true }); });
+    return { dir, ledger, shops, registry };
+}
+test('demo supplies 90 reconciled days with detailed sales, purchases and six actual costs', async t => {
+    const { dir, ledger, shops, registry } = await fixture(t);
+    ledger.add('real-shop', { day: '2026-10-19', kind: 'purchase', amount: '83', note: '真实记录', request: 'real-1' });
+    const real = ledger.rows('real-shop');
+    const demo = await createDemoManager(dir, registry, ledger);
+    assert.equal(await demo.refresh(), null);
+    assert.equal(shops.size, 0);
+    const [a, b] = await Promise.all([demo.ensure(), demo.ensure()]);
+    assert.equal(a.workspace.id, b.workspace.id);
+    assert.equal(a.day, '2026-10-19');
+    const period = ledger.period(a.workspace.id, '2026-07-22', a.day, { limit: 1 });
+    assert.equal(period.days.length, 90);
+    assert.equal(period.total, 1980);
+    assert.equal(period.totals.revenueComplete, true);
+    for (const day of period.days) {
+        assert.equal(day.complete, true);
+        assert.equal(day.revenueComplete, true);
+        assert.equal(day.costs.length, 6);
+        assert.ok(day.costs.every(cost => cost.amount > 0 && cost.basis === 'actual'));
+        assert.equal(day.profit, day.revenue - day.cost);
+        assert.ok(day.profit > 0);
+        assert.ok(day.purchases > 0);
+    }
+    const summary = period.days.slice(-7).map(({ day, revenue, cost, profit, purchases }) => ({ day, revenue, cost, profit, purchases }));
+    assert.deepEqual(summary, JSON.parse(await readFile(new URL('./expected/demo-week.json', import.meta.url), 'utf8')));
+    assert.equal(ledger.report(a.workspace.id, a.day).entries.length, 22);
+    assert.deepEqual(ledger.rows('real-shop'), real);
+    assert.equal(demo.isDemo('real-shop'), false);
+});
+test('reopening and advancing the demo preserves edits, voids and unclosed days', async t => {
+    const { dir, ledger, registry } = await fixture(t);
+    const demo = await createDemoManager(dir, registry, ledger), a = await demo.ensure(), id = a.workspace.id;
+    const revenue = ledger.report(id, a.day).entries.find(row => row.kind === 'revenue');
+    ledger.change(id, { ...revenue, amount: '111.00', action: 'edit' });
+    const purchase = ledger.report(id, a.day).entries.find(row => row.kind === 'purchase');
+    ledger.change(id, { id: purchase.id, version: purchase.version, action: 'void' });
+    const edited = ledger.row(id, revenue.id), count = ledger.rows(id).length;
+    const reopened = await createDemoManager(dir, registry, ledger);
+    await reopened.refresh();
+    assert.equal(ledger.rows(id).length, count);
+    assert.deepEqual(ledger.row(id, revenue.id), edited);
+    assert.equal(ledger.row(id, purchase.id).status, 'void');
+    assert.equal(ledger.report(id, a.day).summary.revenueComplete, false);
+    t.mock.timers.tick(86400000);
+    const tomorrow = await reopened.ensure();
+    assert.equal(tomorrow.day, '2026-10-20');
+    assert.equal(ledger.rows(id).length, count + 22);
+    assert.equal(ledger.report(id, tomorrow.day).summary.revenueComplete, true);
+    assert.equal(ledger.report(id, a.day).summary.revenueComplete, false);
+    assert.deepEqual(ledger.row(id, revenue.id), edited);
+});
+test('legacy demo dates remain intact while the current window is topped up', async t => {
+    const { dir, ledger, shops, registry } = await fixture(t);
+    shops.set('demo-shop', { id: 'demo-shop', path: dir, title: '演示店 · 青禾生活' });
+    await writeFile(join(dir, 'demo-shop.json'), JSON.stringify({ id: 'demo-shop', day: '2026-09-22' }));
+    const row = ledger.add('demo-shop', { day: '2026-09-22', kind: 'revenue', channel: 'store', amount: '6422.40', request: 'demo:2026-09-22:store', note: '虚拟数据 · 门店当日销售汇总' });
+    const original = ledger.row('demo-shop', row);
+    const demo = await createDemoManager(dir, registry, ledger);
+    assert.equal((await demo.refresh()).day, '2026-10-19');
+    assert.deepEqual(ledger.row('demo-shop', row), original);
+    assert.equal(ledger.report('demo-shop', '2026-09-22').entries.filter(r => r.kind === 'revenue' && r.channel === 'store').length, 1);
+    assert.equal(ledger.report('demo-shop', '2026-10-19').summary.complete, true);
+    assert.deepEqual(JSON.parse(await readFile(join(dir, 'demo-shop.json'), 'utf8')), { id: 'demo-shop', day: '2026-09-22' });
+});
+test('a failed demo top-up rolls back the whole dataset and can retry', async t => {
+    const { dir, ledger, registry } = await fixture(t);
+    const add = ledger.add.bind(ledger);
+    let calls = 0;
+    const mock = t.mock.method(ledger, 'add', (...args) => { if (++calls === 8) throw Error('seed interrupted'); return add(...args); });
+    const demo = await createDemoManager(dir, registry, ledger);
+    await assert.rejects(demo.ensure(), /seed interrupted/);
+    assert.equal(ledger.rows('demo-shop').length, 0);
+    assert.equal(ledger.rules('demo-shop').length, 0);
+    assert.equal(ledger.settings('demo-shop').channels, null);
+    mock.mock.restore();
+    await demo.ensure();
+    assert.equal(ledger.rows('demo-shop').length, 1980);
 });
