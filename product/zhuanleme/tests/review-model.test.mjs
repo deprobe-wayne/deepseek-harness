@@ -370,3 +370,11 @@ test('receipt groups keep separate entry ids and ledger navigation reveals the r
     assert.equal(nav.getSnapshot().entryTarget,null);
     nav.dispose();
 });
+
+test('overview entry opens the first shop while later navigation keeps user choices', () => {
+    const nav=createNavigation('overview');nav.syncShop('trial');
+    assert.equal(nav.getSnapshot().view,'overview');
+    nav.select('trial','entries');nav.syncShop('trial');assert.equal(nav.getSnapshot().view,'entries');
+    nav.syncShop('another');assert.equal(nav.getSnapshot().view,'home');
+    for(const value of [undefined,'home','unknown']){const ordinary=createNavigation(value);ordinary.syncShop('real');assert.equal(ordinary.getSnapshot().view,'home');}
+});

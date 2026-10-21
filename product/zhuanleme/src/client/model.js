@@ -45,13 +45,16 @@ export function createModel() {
 }
 
 /** Plugin-owned navigation shared through Slot observable injection. */
-export function createNavigation() {
-    let snapshot = { shopId: null, view: 'home', entryTarget: null }, revision = 0;
+export function createNavigation(initialView = 'home') {
+    const firstView = initialView === 'overview' ? 'overview' : 'home';
+    let snapshot = { shopId: null, view: firstView, entryTarget: null }, revision = 0;
     const listeners = new Set();
+    const select = (shopId, view) => { snapshot = { shopId, view, entryTarget: snapshot.shopId === shopId ? snapshot.entryTarget : null }; for (const fn of listeners) fn(); };
     return {
         getSnapshot: () => snapshot,
         subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-        select(shopId, view) { snapshot = { shopId, view, entryTarget: snapshot.shopId === shopId ? snapshot.entryTarget : null }; for (const fn of listeners) fn(); },
+        select,
+        syncShop(shopId) { if (snapshot.shopId !== shopId) select(shopId, snapshot.shopId === null ? firstView : 'home'); },
         revealEntries(shopId, entries) {
             if (snapshot.shopId !== shopId || !entries.length) return;
             snapshot = { ...snapshot, entryTarget: { day: entries[0].day, section: entries[0].kind === 'revenue' ? 'income' : 'expenses', revision: ++revision } };

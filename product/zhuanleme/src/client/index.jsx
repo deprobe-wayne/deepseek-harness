@@ -258,14 +258,14 @@ export function apply(ctx) {
     const navigation = ctx.uiWorkspace;
     const conversationActions = createConversationActions({ api, navigation });
     ctx.effect(() => () => conversationActions.dispose(), 'zhuanleme: conversation actions');
-    const pageState = createNavigation();
+    const pageState = createNavigation(new URLSearchParams(window.location.search).get('view'));
     ctx.effect(() => () => pageState.dispose(), 'zhuanleme: navigation');
     let navigationGeneration=0;
     const selectPage=async (id,view) => { const version=++navigationGeneration; if(pageState.getSnapshot().shopId!==id)await navigation.openWorkspace(id); if(version===navigationGeneration)pageState.select(id,view); };
     const openLedger=async(shop,entries)=>{await selectPage(shop,'entries');pageState.revealEntries(shop,entries);};
     const startAssistant=async(shop,mode)=>{const sessionId=await navigation.connectWorkspace(shop);await api({op:'assistant-mode',shop,sessionId,mode});pageState.select(shop,'chat');navigation.openSession(sessionId);};
     const prepareHome=async shop=>{await navigation.openWorkspace(shop);};
-    const syncShop=id=>{if(pageState.getSnapshot().shopId!==id)pageState.select(id,'home');};
+    const syncShop=pageState.syncShop;
     const openDemo=async()=>{const result=await api({op:'create-demo'});await shopActions.load();await selectPage(result.workspace.id,'overview');};
     const register = (name, component, options = {}) => ctx.slots.inject(name, () => ctx.slots.register({ name, priority: -100, locale: NS, ...options }, component));
     for (const key of ['zhuanleme_draft', 'zhuanleme_change', 'zhuanleme_rules'])

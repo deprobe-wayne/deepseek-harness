@@ -8,6 +8,8 @@ An independent product Bundle that reuses official DSH chat and workspace servic
 
 ## Usage
 
+Shop entry URLs may use `?view=overview` to open the first selected shop on its overview. Explicit later navigation remains authoritative; ordinary entries retain the shop home.
+
 The local product targets DSH `0.2.1-rc.2`, declared in `engines.dsh`. Conversation navigation selects the product's chat view before opening a stored Session, so home preparation cannot replace that Session with an empty one. Tool tests use the supported `native` and `ptc` modes, including the Agent context and working-directory collaborator required for nested dispatch.
 
 The desktop shop home shows one heading and four gently fanned full-bleed photo actions, separated by narrow gaps with labels over the dark lower areas; hovering or focusing lifts one card slightly. Record and Entries retain the paper and book photos; Analyze shows a magnifier over a trend chart, and Overview shows a complete business report. The native composer stays at the bottom, grows with its content, keeps compact space beneath the toolbar, and opens the full conversation after submission.
