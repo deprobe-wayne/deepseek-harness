@@ -13,7 +13,7 @@ async function fixture(t) {
     t.after(async () => { ledger.close(); await rm(dir, { recursive: true, force: true }); });
     return { dir, ledger, shops, registry };
 }
-test('demo supplies 90 reconciled days with detailed sales, purchases and six actual costs', async t => {
+test('demo supplies 30 reconciled days with detailed sales, purchases and six actual costs', async t => {
     const { dir, ledger, shops, registry } = await fixture(t);
     ledger.add('real-shop', { day: '2026-10-19', kind: 'purchase', amount: '83', note: '真实记录', request: 'real-1' });
     const real = ledger.rows('real-shop');
@@ -23,9 +23,9 @@ test('demo supplies 90 reconciled days with detailed sales, purchases and six ac
     const [a, b] = await Promise.all([demo.ensure(), demo.ensure()]);
     assert.equal(a.workspace.id, b.workspace.id);
     assert.equal(a.day, '2026-10-19');
-    const period = ledger.period(a.workspace.id, '2026-07-22', a.day, { limit: 1 });
-    assert.equal(period.days.length, 90);
-    assert.equal(period.total, 1980);
+    const period = ledger.period(a.workspace.id, '2026-09-20', a.day, { limit: 1 });
+    assert.equal(period.days.length, 30);
+    assert.equal(period.total, 660);
     assert.equal(period.totals.revenueComplete, true);
     for (const day of period.days) {
         assert.equal(day.complete, true);
@@ -89,5 +89,5 @@ test('a failed demo top-up rolls back the whole dataset and can retry', async t 
     assert.equal(ledger.settings('demo-shop').channels, null);
     mock.mock.restore();
     await demo.ensure();
-    assert.equal(ledger.rows('demo-shop').length, 1980);
+    assert.equal(ledger.rows('demo-shop').length, 660);
 });

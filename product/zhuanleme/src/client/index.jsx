@@ -104,10 +104,11 @@ function Trend({ rows: seed, shop, onDate, day, t }) {
 function CostChart({ summary, t }) {
     const [selected,setSelected]=useState(null);
     const detail=summary.costs.find(r=>r.category===selected);
-    const total=summary.knownCost,positive=summary.costs.reduce((n,r)=>n+Math.max(0,r.amount||0),0);
+    const positive=summary.costs.reduce((n,r)=>n+Math.max(0,r.amount||0),0);
+    if (!positive) return <section className={css.costSection}><div className={css.sectionHead}><h3>{t('costStructure')}</h3></div><p className={css.hint} role="status">{t('noCost')}</p></section>;
     const cx=320,cy=270,outer=185,inner=103,point=(r,a)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
     // Put the largest category near the middle, leaving small categories on either side.
-    const sorted=summary.costs.map((r,i)=>({...r,i})).sort((a,b)=>(a.amount||0)-(b.amount||0));
+    const sorted=summary.costs.map((r,i)=>({...r,i})).filter(r=>r.amount>0).sort((a,b)=>a.amount-b.amount);
     const ordered=[...sorted.filter((_,i)=>i%2===0),...sorted.filter((_,i)=>i%2===1).reverse()];
     let offset=0;
     const slices=ordered.map(r=>{const share=positive?Math.max(0,r.amount||0)/positive:0,start=Math.PI+offset*Math.PI;offset+=share;const end=Math.PI+offset*Math.PI,angle=(start+end)/2;const [x,y]=point(outer+26,angle);return {...r,share,start,end,angle,x,y,right:Math.cos(angle)>=0};});
@@ -117,7 +118,6 @@ function CostChart({ summary, t }) {
         if(side.length&&side.at(-1).y>285){const delta=side.at(-1).y-285;side.forEach(r=>r.y-=delta);}
     }
     return <section className={css.costSection}><div className={css.sectionHead}><h3>{t('costStructure')}</h3>{!summary.complete&&<span className={css.hint}>{t('partialCost')}</span>}</div><div className={css.costSemi}><svg viewBox="0 35 640 260" role="group" aria-label={t('costStructure')}>
-        {!positive&&<path d="M 135 270 A 185 185 0 0 1 505 270 L 423 270 A 103 103 0 0 0 217 270 Z" fill="var(--z-soft)"/>}
         {slices.map(r=>{
             const gap=Math.min(.016,(r.end-r.start)/5),start=r.start+gap,end=r.end-gap;
             const p1=point(outer,start),p2=point(outer,end),p3=point(inner,end),p4=point(inner,start);
@@ -131,7 +131,7 @@ function CostChart({ summary, t }) {
             </g>;
         })}
 
-    </svg></div>{detail&&<div className={css.costSelection} role="status"><span>{t(detail.category)}</span><span>{t('amount')} · {money(detail.amount)}</span><span>{t('share')} · {detail.amount==null?'—':positive?`${(Math.max(0,detail.amount)/positive*100).toFixed(1)}%`:'0%'}</span><span>{t(`${detail.basis}Basis`)}</span><button aria-label={t('close')} onClick={()=>setSelected(null)}>×</button></div>}{!total&&<p className={css.hint}>{t('noCost')}</p>}</section>;
+    </svg></div>{detail&&<div className={css.costSelection} role="status"><span>{t(detail.category)}</span><span>{t('amount')} · {money(detail.amount)}</span><span>{t('share')} · {`${(Math.max(0,detail.amount)/positive*100).toFixed(1)}%`}</span><span>{t(`${detail.basis}Basis`)}</span><button aria-label={t('close')} onClick={()=>setSelected(null)}>×</button></div>}</section>;
 }
 function RulesForm({ t, rules, day, onSave, onCancel }) {
     const [effective, setEffective] = useState(day), [values, setValues] = useState(() => categories.map(category => { const r = rules.filter(r => r.category === category && r.effective <= day).sort((a, b) => b.effective.localeCompare(a.effective) || b.seq - a.seq)[0]; return { category, method: r?.method || (['materials', 'platform'].includes(category) ? 'percent' : 'monthly'), value: r ? (r.value / 100).toFixed(2) : '', base: r?.base || (category === 'platform' ? 'meituan' : 'all') }; }));
@@ -174,7 +174,7 @@ function LedgerPanel({ sessionId, t, shop, day, setDay, state, load, mutate, vie
     } };
     if (!shop)
         return <section className={css.empty}><Icon name="shop" size={30}/><h2>{t('pickShop')}</h2><p>{t('pickHint')}</p></section>;
-    return <section className={css.ledger} data-view={view}><header className={css.header}><div><h1>{t(view)}</h1><p>{shop.title}</p></div><input type="date" aria-label={t('date')} value={day} onChange={e => { if (e.target.value)
+    return <section className={css.ledger} data-view={view}><header className={css.header}><div><h1>{t(view)}</h1><p>{shop.title}{data?.demo ? ` · ${t('demo')}` : ''}</p></div><input type="date" aria-label={t('date')} value={day} onChange={e => { if (e.target.value)
         setDay(e.target.value); }}/></header>{(state.error || error) && <div role="alert" className={css.error}>{state.error || error}<button onClick={() => load(shop.id, day)}>{t('retry')}</button></div>}{form?.kind === 'entry' && form.row && <LedgerGrid key={form.row.id} shop={shop.id} entries={[form.row]} includeDrafts day={form.row.day} t={t} onSave={input => save(input)}/>}{form?.kind === 'rules' && <RulesForm t={t} rules={form.rules} day={form.day} onCancel={() => setForm(null)} onSave={rules => save({ op: 'rules', rules, version: form.version })}/>}{!data ? <p className={css.hint} role="status">{t('loading')}</p> : <>{view === 'overview' && <><PendingChanges proposals={data.proposals || []} t={t} busy={busy} onAction={(p, actionType) => action(p, actionType, 'proposal')}/>{data.entries.some(r => r.status === 'draft') && <section className={css.drafts}><h3>{t('drafts')}</h3><p className={css.hint}>{t('draftHint')}</p>{data.entries.filter(r => r.status === 'draft').map(r => <div className={css.draft} key={r.id}><div><strong>{r.day} · {t(r.kind)} · {t(r.category || r.channel || 'purchase')}</strong><p>{r.note}</p></div><b>{money(r.amount)}</b><button disabled={busy} onClick={() => action(r, 'confirm')}>{t('confirm')}</button><button disabled={busy} onClick={() => setForm({ kind: 'entry', row: r })}>{t('edit')}</button><button disabled={busy} onClick={() => action(r, 'void')}>{t('void')}</button></div>)}</section>}</>}{view === 'overview' ? <><div className={css.metrics}>{[['revenue', data.summary.revenue], ['cost', data.summary.cost], ['profit', data.summary.profit]].map(([k, n]) => <div key={k}><span>{t(k==='profit'?'profit_'+data.summary.profitStatus:k)}</span><strong data-profit={k === 'profit'}>{n === null ? t('missing') : money(n)}</strong></div>)}</div>{data.summary.profitStatus!=='verified'&&<p className={css.hint} role="status">{t('profitHint_'+data.summary.profitStatus)}</p>}<Trend rows={data.trend} shop={shop.id} day={day} onDate={setDay} t={t}/><CostChart key={day} summary={data.summary} t={t}/><details className={css.costDetails}><summary>{t('details')}</summary><div className={css.sectionHead}><h3>{t('breakdown')}</h3><span className={css.hint}>{day}</span></div><table className={css.table}><thead><tr><th>{t('item')}</th><th>{t('basis')}</th><th>{t('amount')}</th></tr></thead><tbody>{data.summary.costs.map(r => <tr key={r.category}><td>{t(r.category)}</td><td className={css.muted}>{t(`${r.basis}Basis`)}{r.rule?.method === 'percent' && <small>{r.rule.value / 100}% · {t(r.rule.base)}</small>}</td><td>{r.amount === null ? t('missing') : money(r.amount)}</td></tr>)}</tbody><tfoot><tr><th colSpan={2}>{t(data.summary.complete ? 'total' : 'known')}</th><td>{money(data.summary.knownCost)}</td></tr></tfoot></table>{!data.summary.complete && <p className={css.hint}>{t('costHint')}</p>}</details></> : <LedgerGrid key={shop.id} sessionId={sessionId} shop={shop.id} savedHistory={data.history||[]} entryTarget={entryTarget} entries={data.entries} day={day} t={t} onSave={payload => save(payload)}/> }</>}</section>;
 }
 function ProductViews({renderSlot}) { return <div className={css.transcript}>{renderSlot('conversation.session', {})}</div>; }
@@ -225,6 +225,7 @@ function Workbench(props) {
                 <p>{t('pickShop')}</p>
                 <button className={css.homeSecondary} onClick={()=>openDemo().catch(e=>setError(e.message))}>{t('loadDemo')}</button>
             </>}
+            {shop&&<button className={css.homeSecondary} onClick={()=>openDemo().catch(e=>setError(e.message))}>{t('loadDemo')}</button>}
             {error&&<p role="alert" className={css.error}>{error}</p>}
         </section>
         {shop&&<div className={css.homeComposer} aria-busy={!session?.blank}>
@@ -265,7 +266,7 @@ export function apply(ctx) {
     const startAssistant=async(shop,mode)=>{const sessionId=await navigation.connectWorkspace(shop);await api({op:'assistant-mode',shop,sessionId,mode});pageState.select(shop,'chat');navigation.openSession(sessionId);};
     const prepareHome=async shop=>{await navigation.openWorkspace(shop);};
     const syncShop=id=>{if(pageState.getSnapshot().shopId!==id)pageState.select(id,'home');};
-    const openDemo=async()=>{const result=await api({op:'create-demo'});await shopActions.load();await selectPage(result.workspace.id,'home');};
+    const openDemo=async()=>{const result=await api({op:'create-demo'});await shopActions.load();await selectPage(result.workspace.id,'overview');};
     const register = (name, component, options = {}) => ctx.slots.inject(name, () => ctx.slots.register({ name, priority: -100, locale: NS, ...options }, component));
     for (const key of ['zhuanleme_draft', 'zhuanleme_change', 'zhuanleme_rules'])
         register('tool.call.toolview', ReviewCard, { key, inject: () => ({ changed, subscribeChanges }) });

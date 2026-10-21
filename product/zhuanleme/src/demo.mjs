@@ -30,7 +30,7 @@ export async function createDemoManager(dir, registry, ledger) {
         }
         const result = { workspace: { id: workspace.id, title: workspace.title, path: workspace.path }, day, demo: true };
         if (seededThrough === day) return result;
-        const id = workspace.id, from = shiftDay(day, -89);
+        const id = workspace.id, from = shiftDay(day, -29);
         ledger.transaction(() => {
             if (!ledger.rules(id).length) ledger.setRules(id, [
                 { category: 'materials', method: 'percent', value: '46', base: 'all' },
@@ -53,7 +53,7 @@ export async function createDemoManager(dir, registry, ledger) {
                 const request = `demo:v2:${key}`;
                 if (!exists.get(id, request)) ledger.add(id, { ...data, request, settlement: 'paid', account: data.kind === 'revenue' ? '演示收款账户' : '演示经营账户' });
             };
-            for (let i = 0; i < 90; i++) {
+            for (let i = 0; i < 30; i++) {
                 const date = shiftDay(from, i), serial = Math.floor(Date.parse(date) / 86400000), weekday = new Date(date).getUTCDay();
                 // Absolute dates keep amounts stable when tomorrow's rolling window advances.
                 const total = Math.round(([10800, 7850, 7520, 8180, 8640, 9780, 12250][weekday] + Math.sin(serial * .71) * 480 + Math.cos(serial * .19) * 320) * 100);
